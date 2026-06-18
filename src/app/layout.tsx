@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { Spectral, Public_Sans } from "next/font/google";
+import { Spectral, Public_Sans, Geist } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const spectral = Spectral({
   variable: "--font-spectral",
@@ -27,7 +30,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className={`${spectral.variable} ${publicSans.variable}`}>
         {children}
       </body>

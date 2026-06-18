@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Reveal } from "@/components/Reveal";
-import { PageHeader, btnGhost } from "@/components/admin/ui";
+import { PageHeader } from "@/components/admin/ui";
+import { Button } from "@/components/ui/button";
 import { ResultsBars, type ResultPosition } from "@/components/results/ResultsBars";
 
 interface Results {
@@ -32,15 +33,15 @@ export default function AdminResultsPage() {
         title="Live results"
         subtitle="Tallies update as each ballot is sealed."
         right={
-          <div className="no-print" style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => exportAs("csv")} style={btnGhost()}>Export CSV</button>
-            <button onClick={() => exportAs("xls")} style={btnGhost()}>Export Excel</button>
-            <button onClick={() => window.print()} style={btnGhost()}>Export PDF</button>
+          <div className="no-print flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => exportAs("csv")}>Export CSV</Button>
+            <Button variant="outline" size="sm" onClick={() => exportAs("xls")}>Export Excel</Button>
+            <Button variant="outline" size="sm" onClick={() => window.print()}>Export PDF</Button>
           </div>
         }
       />
       {!data ? (
-        <p style={{ color: "#5C6B61" }}>Loading results…</p>
+        <p className="text-muted-foreground">Loading results…</p>
       ) : (
         <ResultsBars positions={data.positions} />
       )}

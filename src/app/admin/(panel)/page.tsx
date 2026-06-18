@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Reveal } from "@/components/Reveal";
-import { PageHeader, StatCard, LivePill, card } from "@/components/admin/ui";
+import { PageHeader, StatCard, LivePill } from "@/components/admin/ui";
+import { Card } from "@/components/ui/card";
 
 interface Overview {
   votesCast: number;
@@ -42,7 +43,7 @@ export default function OverviewPage() {
       .catch(() => {});
   }, []);
 
-  if (!data) return <p style={{ color: "#5C6B61" }}>Loading overview…</p>;
+  if (!data) return <p className="text-muted-foreground">Loading overview…</p>;
 
   return (
     <Reveal stagger={0.06}>
@@ -51,27 +52,30 @@ export default function OverviewPage() {
         subtitle="Live status of the PASA Executive Election 2026."
         right={<LivePill open={data.votingOpen} />}
       />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginBottom: 22 }}>
-        <StatCard label="Votes cast" value={data.votesCast} color="#0E5A37" />
+      <div className="mb-6 grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))]">
+        <StatCard label="Votes cast" value={data.votesCast} />
         <StatCard label="Eligible voters" value={data.totalEligible} />
         <StatCard label="Turnout" value={`${data.turnoutPct}%`} />
-        <StatCard label="Flagged attempts" value={data.flaggedCount} color="#B0651F" />
+        <StatCard label="Flagged attempts" value={data.flaggedCount} />
       </div>
-      <div style={card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
-          <h3 className="font-serif" style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>Turnout progress</h3>
-          <span style={{ fontSize: 12.5, color: "#5C6B61" }}>{data.votesCast} of {data.totalEligible} voters</span>
+      <Card className="p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lg font-semibold text-foreground">Turnout progress</h3>
+          <span className="text-[12.5px] text-muted-foreground">{data.votesCast} of {data.totalEligible} voters</span>
         </div>
-        <div style={{ height: 14, background: "#EDEADD", borderRadius: 99, overflow: "hidden", marginBottom: 18 }}>
-          <div style={{ height: "100%", background: "linear-gradient(90deg,#0E5A37,#2DA05A)", borderRadius: 99, width: `${data.turnoutPct}%`, transition: "width .8s ease" }} />
+        <div className="mb-1 h-3.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-700"
+            style={{ width: `${data.turnoutPct}%` }}
+          />
         </div>
-        <div style={{ display: "flex", gap: 22, flexWrap: "wrap", fontSize: 13, color: "#46554C" }}>
+        <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
           <span>Opened: {fmt(data.opensAt)}</span>
           <span>Closes: {fmt(data.closesAt)}</span>
           <span>Positions: {data.positions}</span>
           <span>Candidates: {data.candidates}</span>
         </div>
-      </div>
+      </Card>
     </Reveal>
   );
 }

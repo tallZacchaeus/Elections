@@ -9,16 +9,18 @@ export default async function ObserverLoginPage() {
   if (session) redirect("/observer");
 
   return (
-    <LoginForm
-      portal="observer"
-      title="Observer Portal"
-      subtitle="Accredited monitors — read-only access to live results."
-      redirectTo="/observer"
-      hint={
-        process.env.NODE_ENV !== "production"
-          ? "Demo: observer@oyscatech.edu.ng / ChangeMe!Observer2026"
-          : undefined
-      }
-    />
+    <div className="flex min-h-screen items-center justify-center bg-background px-6 py-10">
+      <LoginForm
+        portal="observer"
+        title="Observer Portal"
+        subtitle="Accredited monitors — read-only access to live results."
+        redirectTo="/observer"
+        hint={
+          process.env.NODE_ENV !== "production"
+            ? "Demo: observer@oyscatech.edu.ng / ChangeMe!Observer2026"
+            : undefined
+        }
+      />
+    </div>
   );
 }

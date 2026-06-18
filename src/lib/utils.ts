@@ -1,3 +1,10 @@
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
 /** Two-letter initials from a full name. */
 export function initials(name: string): string {
   const p = name.trim().split(/\s+/);

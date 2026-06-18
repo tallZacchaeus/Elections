@@ -4,7 +4,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { Avatar } from "@/components/Avatar";
 import { useToast, Toast } from "@/components/Toast";
-import { PageHeader, btnPrimary, btnGhost, inputStyle, labelStyle } from "@/components/admin/ui";
+import { PageHeader } from "@/components/admin/ui";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { X } from "lucide-react";
 
 interface Candidate {
   id: string;
@@ -126,80 +140,97 @@ export default function CandidatesPage() {
     }
   }
 
-  if (loading) return <p style={{ color: "#5C6B61" }}>Loading candidates…</p>;
+  if (loading) return <p className="text-muted-foreground">Loading candidates…</p>;
 
   return (
     <Reveal>
       <PageHeader title="Manage candidates" subtitle="Add or review accredited candidates for each position." />
 
       {/* Add candidate */}
-      <div style={{ background: "#fff", border: "1px solid #E4E0D4", borderRadius: 13, padding: 18, marginBottom: 18, display: "grid", gridTemplateColumns: "1fr 2fr", gap: 12, alignItems: "start" }}>
+      <Card className="mb-4.5 grid grid-cols-[1fr_2fr] items-start gap-3 p-5">
         <div>
-          <label style={labelStyle}>Position</label>
-          <select value={posId} onChange={(e) => setPosId(e.target.value)} style={inputStyle}>
-            {positions.map((p) => (
-              <option key={p.id} value={p.id}>{p.title}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label style={labelStyle}>Candidate name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={inputStyle} />
-        </div>
-        <div>
-          <label style={labelStyle}>Level / standing (optional)</label>
-          <input value={level} onChange={(e) => setLevel(e.target.value)} placeholder="e.g. HND II · Public Admin" style={inputStyle} />
+          <Label className="mb-1.5">Position</Label>
+          <Select value={posId} onValueChange={setPosId}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a position" />
+            </SelectTrigger>
+            <SelectContent>
+              {positions.map((p) => (
+                <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
-          <label style={labelStyle}>Manifesto (optional)</label>
-          <textarea value={manifesto} onChange={(e) => setManifesto(e.target.value)} rows={2} placeholder="Short manifesto…" style={{ ...inputStyle, resize: "vertical" }} />
+          <Label className="mb-1.5">Candidate name</Label>
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
         </div>
-        <div style={{ gridColumn: "1 / -1" }}>
-          <label style={labelStyle}>Photo (optional)</label>
-          <input
-            ref={addFileRef}
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
-            style={{ fontSize: 13, color: "#46554C" }}
-          />
-          <span style={{ fontSize: 12, color: "#8A968C", marginLeft: 8 }}>
-            JPG, PNG, WebP or GIF · up to 4 MB. You can also add a photo after creating the candidate.
-          </span>
+        <div>
+          <Label className="mb-1.5">Level / standing (optional)</Label>
+          <Input value={level} onChange={(e) => setLevel(e.target.value)} placeholder="e.g. HND II · Public Admin" />
         </div>
-        <div style={{ gridColumn: "1 / -1" }}>
-          <button onClick={addCandidate} style={btnPrimary()}>Add candidate</button>
+        <div>
+          <Label className="mb-1.5">Manifesto (optional)</Label>
+          <Textarea value={manifesto} onChange={(e) => setManifesto(e.target.value)} rows={2} placeholder="Short manifesto…" />
         </div>
-      </div>
+        <div className="col-span-full">
+          <Label className="mb-1.5">Photo (optional)</Label>
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              ref={addFileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+              className="max-w-xs text-sm"
+            />
+            <span className="text-xs text-muted-foreground">
+              JPG, PNG, WebP or GIF · up to 4 MB. You can also add a photo after creating the candidate.
+            </span>
+          </div>
+        </div>
+        <div className="col-span-full">
+          <Button onClick={addCandidate}>Add candidate</Button>
+        </div>
+      </Card>
 
       {/* Add position */}
-      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 22, flexWrap: "wrap" }}>
-        <input value={newPosTitle} onChange={(e) => setNewPosTitle(e.target.value)} placeholder="New position title" style={{ ...inputStyle, maxWidth: 280 }} />
-        <button onClick={addPosition} style={btnGhost()}>+ Add position</button>
+      <div className="mb-6 flex flex-wrap items-center gap-2.5">
+        <Input
+          value={newPosTitle}
+          onChange={(e) => setNewPosTitle(e.target.value)}
+          placeholder="New position title"
+          className="max-w-[280px]"
+        />
+        <Button variant="outline" onClick={addPosition}>+ Add position</Button>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <div className="flex flex-col gap-4.5">
         {positions.map((pos) => (
-          <div key={pos.id} style={{ background: "#fff", border: "1px solid #E4E0D4", borderRadius: 13, padding: "18px 20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, gap: 10 }}>
-              <h3 className="font-serif" style={{ fontSize: 17, fontWeight: 600, margin: 0 }}>{pos.title}</h3>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "#8A968C", background: "#F2F0E6", padding: "4px 10px", borderRadius: 99 }}>{pos.candidates.length} candidates</span>
-                <button onClick={() => deletePosition(pos.id, pos.title)} style={{ ...btnGhost({ color: "#A12B2B", borderColor: "#E7C9C9" }) }}>Delete</button>
+          <Card key={pos.id} className="gap-3.5 p-5">
+            <div className="flex items-center justify-between gap-2.5">
+              <h3 className="text-base font-semibold text-foreground">{pos.title}</h3>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">{pos.candidates.length} candidates</Badge>
+                <Button variant="destructive" size="sm" onClick={() => deletePosition(pos.id, pos.title)}>
+                  Delete
+                </Button>
               </div>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            <div className="flex flex-wrap gap-2.5">
               {pos.candidates.length === 0 && (
-                <span style={{ fontSize: 13, color: "#8A968C" }}>No candidates yet.</span>
+                <span className="text-sm text-muted-foreground">No candidates yet.</span>
               )}
               {pos.candidates.map((c) => (
-                <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "#F7F5EC", border: "1px solid #EAE6D8", borderRadius: 10, padding: "8px 10px 8px 8px" }}>
+                <div
+                  key={c.id}
+                  className="flex items-center gap-2.5 rounded-lg border bg-muted/40 py-2 pr-2.5 pl-2"
+                >
                   <Avatar name={c.name} size={34} bg={c.avatarBg} photoUrl={c.photoUrl} fontSize={13} />
-                  <div style={{ lineHeight: 1.25 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 600 }}>{c.name}</div>
-                    <div style={{ fontSize: 11, color: "#8A968C" }}>{c.level}</div>
+                  <div className="leading-tight">
+                    <div className="text-[13.5px] font-semibold text-foreground">{c.name}</div>
+                    <div className="text-[11px] text-muted-foreground">{c.level}</div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 2, marginLeft: 4 }}>
+                  <div className="ml-1 flex items-center gap-1">
                     <PhotoButton
                       hasPhoto={!!c.photoUrl}
                       onPick={async (file) => {
@@ -210,16 +241,30 @@ export default function CandidatesPage() {
                       }}
                     />
                     {c.photoUrl && (
-                      <button onClick={() => removePhoto(c.id)} title="Remove photo" style={{ background: "transparent", border: "none", color: "#8A968C", cursor: "pointer", fontSize: 11, padding: 4 }}>
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => removePhoto(c.id)}
+                        title="Remove photo"
+                      >
                         clear
-                      </button>
+                      </Button>
                     )}
-                    <button onClick={() => deleteCandidate(c.id, c.name)} aria-label={`Remove ${c.name}`} title="Remove candidate" style={{ background: "transparent", border: "none", color: "#B0651F", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 4 }}>×</button>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => deleteCandidate(c.id, c.name)}
+                      aria-label={`Remove ${c.name}`}
+                      title="Remove candidate"
+                      className="text-destructive"
+                    >
+                      <X className="size-4" />
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         ))}
       </div>
       <Toast message={toast} />
@@ -241,20 +286,21 @@ function PhotoButton({
         ref={ref}
         type="file"
         accept="image/png,image/jpeg,image/webp,image/gif"
-        style={{ display: "none" }}
+        className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) onPick(f);
           if (ref.current) ref.current.value = "";
         }}
       />
-      <button
+      <Button
+        variant="outline"
+        size="xs"
         onClick={() => ref.current?.click()}
         title={hasPhoto ? "Change photo" : "Add photo"}
-        style={{ background: "transparent", border: "1px solid #D8D3C4", color: "#0E5A37", borderRadius: 7, padding: "4px 9px", fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}
       >
         {hasPhoto ? "Change photo" : "Add photo"}
-      </button>
+      </Button>
     </>
   );
 }
