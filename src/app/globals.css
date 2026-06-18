@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+:root {
+  /* PASA brand palette (from the design) */
+  --green-900: #06281a;
+  --green-800: #082e1d;
+  --green-700: #0a3d26;
+  --green-600: #0b4a2d;
+  --green-500: #0e5a37;
+  --green-400: #137a49;
+  --green-300: #1f6e5e;
+  --live: #2da05a;
+  --mint: #7fc79a;
+  --gold: #c8932a;
+  --gold-deep: #9a6b12;
+  --cream: #f4f1e6;
+  --cream-bg: #eceae0;
+  --paper: #f2f0e6;
+  --ink: #16241c;
+  --ink-soft: #46554c;
+  --ink-mute: #5c6b61;
+  --line: #e4e0d4;
+  --danger: #a12b2b;
+
+  --font-serif: var(--font-spectral), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-public-sans), system-ui, -apple-system, sans-serif;
+}
+
+@theme inline {
+  --color-green-900: var(--green-900);
+  --color-green-800: var(--green-800);
+  --color-green-700: var(--green-700);
+  --color-green-600: var(--green-600);
+  --color-green-500: var(--green-500);
+  --color-green-400: var(--green-400);
+  --color-live: var(--live);
+  --color-mint: var(--mint);
+  --color-gold: var(--gold);
+  --color-cream: var(--cream);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-mute: var(--ink-mute);
+  --color-line: var(--line);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--cream-bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--gold);
+  color: #fff;
+}
+
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Looping ambient animation kept as CSS (GSAP drives entrance/transition FX) */
+@keyframes livePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(45, 160, 90, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(45, 160, 90, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(45, 160, 90, 0);
+  }
+}
+
+.live-dot {
+  animation: livePulse 2s infinite;
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pop-in {
+  animation: popIn 0.3s ease both;
+}
+
+@keyframes drawCheck {
+  from {
+    stroke-dashoffset: 60;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
+
+/* Respect reduced-motion users */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--green-500);
+  outline-offset: 2px;
+}

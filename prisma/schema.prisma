@@ -1,0 +1,102 @@
+// PASA Election System — data model
+// Postgres by default. To use MySQL, change provider to "mysql" and the
+// DATABASE_URL accordingly (everything else in this schema is compatible).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  OBSERVER
+}
+
+/// Singleton election configuration (white-label fields shown in the design).
+model Setting {
+  id             Int       @id @default(1)
+  institution    String    @default("Oyo State College of Agriculture and Technology")
+  faculty        String    @default("Faculty of Management & Communication Studies")
+  department     String    @default("Department of Public Administration")
+  electionTitle  String    @default("PASA Executive Election 2026")
+  votingOpensAt  DateTime?
+  votingClosesAt DateTime?
+  votingOpen     Boolean   @default(true)
+  updatedAt      DateTime  @updatedAt @default(now())
+}
+
+model Position {
+  id         String      @id @default(cuid())
+  title      String
+  order      Int         @default(0)
+  candidates Candidate[]
+  votes      Vote[]
+  createdAt  DateTime    @default(now())
+
+  @@index([order])
+}
+
+model Candidate {
+  id         String   @id @default(cuid())
+  position   Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  positionId String
+  name       String
+  level      String   @default("Public Admin")
+  avatarBg   String   @default("#0E5A37")
+  manifesto  String   @default("")
+  order      Int      @default(0)
+  photo      Bytes?   // optional candidate photo, served via /api/candidates/[id]/photo
+  photoMime  String?
+  votes      Vote[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt @default(now())
+
+  @@index([positionId])
+}
+
+/// The eligibility roster. hasVoted is the single source of truth that
+/// enforces one vote per matriculation number.
+model Voter {
+  id           String    @id @default(cuid())
+  matricNumber String    @unique
+  fullName     String
+  hasVoted     Boolean   @default(false)
+  votedAt      DateTime?
+  receipt      String?   @unique
+  createdAt    DateTime  @default(now())
+}
+
+/// Anonymous ballot rows. Deliberately NOT linked to a Voter so a person's
+/// identity can never be tied to their selections.
+model Vote {
+  id          String    @id @default(cuid())
+  position    Position  @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  positionId  String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId String
+  createdAt   DateTime  @default(now())
+
+  @@index([positionId])
+  @@index([candidateId])
+}
+
+model FlaggedAttempt {
+  id           String   @id @default(cuid())
+  matricNumber String
+  reference    String   @unique
+  reason       String   @default("Duplicate vote attempt")
+  createdAt    DateTime @default(now())
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now())
+}

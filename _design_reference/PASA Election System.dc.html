@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#0A3D26">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0A3D26"/>
+    <circle cx="600" cy="360" r="150" fill="#0E5A37" stroke="#C8932A" stroke-width="8"/>
+    <path d="M600 270c40 48 40 96 0 144-40-48-40-96 0-144z" fill="#7FC79A"/>
+    <path d="M528 342c48 16 72 56 72 112-48-16-72-56-72-112z" fill="#C8932A"/>
+    <path d="M672 342c-48 16-72 56-72 112 48-16 72-56 72-112z" fill="#C8932A"/>
+    <circle cx="600" cy="438" r="22" fill="#F4F1E6"/>
+    <rect x="430" y="560" width="340" height="26" rx="13" fill="#C8932A"/>
+    <rect x="370" y="612" width="460" height="16" rx="8" fill="#1F6E5E"/>
+  </svg>
+</template>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: #ECEAE0; }
+  input, button, select, textarea { font-family: inherit; }
+  ::selection { background: #C8932A; color: #fff; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes popIn { 0% { opacity: 0; transform: scale(.8); } 60% { transform: scale(1.06); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(45,160,90,.55); } 70% { box-shadow: 0 0 0 7px rgba(45,160,90,0); } 100% { box-shadow: 0 0 0 0 rgba(45,160,90,0); } }
+  @keyframes growBar { from { width: 0; } }
+  @keyframes drawCheck { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }
+  @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+</style>
+</helmet>
+
+<div style="min-height:100vh; font-family:'Public Sans',sans-serif; color:#16241C; background:#ECEAE0; -webkit-font-smoothing:antialiased;">
+
+  <!-- PROTOTYPE NAV STRIP -->
+  <div style="display:flex; align-items:center; gap:14px; background:#0A3D26; color:#CFE6D8; padding:8px 18px; font-size:12px; letter-spacing:.04em; position:sticky; top:0; z-index:60;">
+    <span style="display:flex; align-items:center; gap:7px; font-weight:700; color:#C8932A; letter-spacing:.14em;">
+      <span style="width:6px; height:6px; border-radius:50%; background:#C8932A; display:inline-block;"></span>PROTOTYPE
+    </span>
+    <span style="opacity:.45;">|</span>
+    <div style="display:flex; gap:4px;">
+      <button onClick="{{ goPortal }}" style="{{ navHomeStyle }}">Home</button>
+      <button onClick="{{ goLandingVoter }}" style="{{ navVoterStyle }}">Voter</button>
+      <button onClick="{{ goAdmin }}" style="{{ navAdminStyle }}">Admin</button>
+      <button onClick="{{ goObserver }}" style="{{ navObserverStyle }}">Observer</button>
+    </div>
+    <span style="margin-left:auto; opacity:.6; font-size:11px;">Demo data · OYSCATECH</span>
+  </div>
+
+  <!-- ===================== PORTAL ===================== -->
+  <sc-if value="{{ isPortal }}" hint-placeholder-val="{{ true }}">
+  <div style="animation:fadeUp .45s ease both; min-height:calc(100vh - 36px); display:flex; flex-direction:column; background:radial-gradient(120% 90% at 80% -10%, #0E5A37 0%, #093821 55%, #06281A 100%);">
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:56px 24px; text-align:center; color:#F4F1E6;">
+      <div style="width:84px; height:84px; border-radius:50%; background:#0A3D26; border:2px solid #C8932A; display:flex; align-items:center; justify-content:center; box-shadow:0 14px 40px rgba(0,0,0,.4); margin-bottom:24px;">
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+          <path d="M23 7c5 6 5 12 0 18-5-6-5-12 0-18z" fill="#7FC79A"/>
+          <path d="M14 16c6 2 9 7 9 14-6-2-9-7-9-14z" fill="#C8932A"/>
+          <path d="M32 16c-6 2-9 7-9 14 6-2 9-7 9-14z" fill="#C8932A"/>
+          <circle cx="23" cy="33" r="3.4" fill="#F4F1E6"/>
+        </svg>
+      </div>
+      <div style="font-size:12px; letter-spacing:.32em; text-transform:uppercase; color:#C8932A; font-weight:700; margin-bottom:14px;">Secure Electronic Ballot</div>
+      <h1 style="font-family:'Spectral',serif; font-weight:600; font-size:46px; line-height:1.08; margin:0 0 14px; max-width:760px;">Public Administration Students' Association Election 2026</h1>
+      <p style="font-size:16px; line-height:1.6; color:#BBD3C4; max-width:560px; margin:0 0 4px;">Faculty of Management &amp; Communication Studies · Department of Public Administration</p>
+      <p style="font-size:14px; color:#8FB29E; max-width:540px; margin:0 0 40px;">Oyo State College of Agriculture and Technology, Igbo-Ora</p>
+
+      <div style="display:grid; grid-template-columns:repeat(3,minmax(0,240px)); gap:18px; width:100%; max-width:780px; text-align:left;">
+        <button onClick="{{ goLandingVoter }}" style="background:#F4F1E6; border:none; border-radius:14px; padding:24px 22px; cursor:pointer; text-align:left; transition:transform .18s ease, box-shadow .18s ease; box-shadow:0 8px 24px rgba(0,0,0,.22);" style-hover="transform:translateY(-4px); box-shadow:0 16px 36px rgba(0,0,0,.3);">
+          <div style="width:40px; height:40px; border-radius:10px; background:#0E5A37; display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div style="font-family:'Spectral',serif; font-size:21px; font-weight:600; color:#16241C; margin-bottom:6px;">Cast your vote</div>
+          <div style="font-size:13.5px; line-height:1.5; color:#5C6B61;">Verify your matriculation number and select your candidates.</div>
+        </button>
+        <button onClick="{{ goAdmin }}" style="background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:24px 22px; cursor:pointer; text-align:left; transition:transform .18s ease, background .18s ease;" style-hover="transform:translateY(-4px); background:rgba(255,255,255,.12);">
+          <div style="width:40px; height:40px; border-radius:10px; background:#C8932A; display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16241C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 9l-5 4 1.5 7L12 16l-5.5 4L8 13 3 9l6.5-.5z"/></svg>
+          </div>
+          <div style="font-family:'Spectral',serif; font-size:21px; font-weight:600; color:#F4F1E6; margin-bottom:6px;">Administrator</div>
+          <div style="font-size:13.5px; line-height:1.5; color:#A9C4B5;">Configure elections, candidates and the voter roster.</div>
+        </button>
+        <button onClick="{{ goObserver }}" style="background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:24px 22px; cursor:pointer; text-align:left; transition:transform .18s ease, background .18s ease;" style-hover="transform:translateY(-4px); background:rgba(255,255,255,.12);">
+          <div style="width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,.16); display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F1E6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div style="font-family:'Spectral',serif; font-size:21px; font-weight:600; color:#F4F1E6; margin-bottom:6px;">Observer</div>
+          <div style="font-size:13.5px; line-height:1.5; color:#A9C4B5;">Monitor live results and export official reports.</div>
+        </button>
+      </div>
+    </div>
+    <div style="display:flex; gap:26px; justify-content:center; flex-wrap:wrap; padding:20px; border-top:1px solid rgba(255,255,255,.1); color:#8FB29E; font-size:12.5px;">
+      <span style="display:flex; align-items:center; gap:7px;"><span style="width:8px; height:8px; border-radius:50%; background:#3CB371; display:inline-block; animation:livePulse 2s infinite;"></span>Voting is open</span>
+      <span>One vote per matric number</span>
+      <span>Independently observed</span>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== VOTER LANDING ===================== -->
+  <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+  <div style="animation:fadeUp .4s ease both;">
+    <div style="background:#0A3D26; color:#F4F1E6; padding:18px 24px; display:flex; align-items:center; gap:14px;">
+      <div style="width:42px; height:42px; border-radius:50%; background:#0E5A37; border:1.5px solid #C8932A; display:flex; align-items:center; justify-content:center; flex:none;">
+        <svg width="24" height="24" viewBox="0 0 46 46" fill="none"><path d="M23 7c5 6 5 12 0 18-5-6-5-12 0-18z" fill="#7FC79A"/><path d="M14 16c6 2 9 7 9 14-6-2-9-7-9-14z" fill="#C8932A"/><path d="M32 16c-6 2-9 7-9 14 6-2 9-7 9-14z" fill="#C8932A"/></svg>
+      </div>
+      <div style="line-height:1.3;">
+        <div style="font-family:'Spectral',serif; font-size:16px; font-weight:600;">Oyo State College of Agriculture and Technology</div>
+        <div style="font-size:12px; color:#9FBFAE;">Dept. of Public Administration · PASA Executive Election 2026</div>
+      </div>
+    </div>
+
+    <div style="max-width:980px; margin:0 auto; padding:46px 24px 64px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+        <span style="display:flex; align-items:center; gap:7px; background:#E2F0E7; color:#0E5A37; padding:6px 12px; border-radius:999px; font-size:12.5px; font-weight:700; letter-spacing:.03em;"><span style="width:8px; height:8px; border-radius:50%; background:#2DA05A; display:inline-block; animation:livePulse 2s infinite;"></span>Voting open</span>
+        <span style="color:#5C6B61; font-size:13px;">Closes 18 June 2026, 4:00 PM</span>
+      </div>
+      <h1 style="font-family:'Spectral',serif; font-weight:600; font-size:40px; line-height:1.1; margin:0 0 14px; max-width:680px;">Elect the next executive council of your association</h1>
+      <p style="font-size:16px; line-height:1.65; color:#46554C; max-width:600px; margin:0 0 32px;">Your ballot is private and counts once. Have your matriculation number ready to begin — the process takes about two minutes.</p>
+
+      <button onClick="{{ goLogin }}" style="background:#0E5A37; color:#fff; border:none; border-radius:11px; padding:15px 30px; font-size:15.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:10px; box-shadow:0 10px 26px rgba(14,90,55,.32); transition:transform .16s ease, box-shadow .16s ease;" style-hover="transform:translateY(-2px); box-shadow:0 16px 34px rgba(14,90,55,.4);">
+        Proceed to verification
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:46px;">
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:20px;">
+          <div style="font-family:'Spectral',serif; font-size:30px; font-weight:600; color:#0E5A37;">5</div>
+          <div style="font-size:12.5px; color:#5C6B61; margin-top:2px;">Positions on the ballot</div>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:20px;">
+          <div style="font-family:'Spectral',serif; font-size:30px; font-weight:600; color:#0E5A37;">12</div>
+          <div style="font-size:12.5px; color:#5C6B61; margin-top:2px;">Accredited candidates</div>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:20px;">
+          <div style="font-family:'Spectral',serif; font-size:30px; font-weight:600; color:#0E5A37;">312</div>
+          <div style="font-size:12.5px; color:#5C6B61; margin-top:2px;">Eligible voters</div>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:20px;">
+          <div style="font-family:'Spectral',serif; font-size:30px; font-weight:600; color:#0E5A37;">~2 min</div>
+          <div style="font-size:12.5px; color:#5C6B61; margin-top:2px;">Average time to vote</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:36px;">
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:15px; padding:26px;">
+          <h3 style="font-family:'Spectral',serif; font-size:19px; font-weight:600; margin:0 0 16px;">How voting works</h3>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div style="display:flex; gap:13px; align-items:flex-start;"><span style="width:24px; height:24px; border-radius:50%; background:#E2F0E7; color:#0E5A37; font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none;">1</span><div style="font-size:14px; line-height:1.5; color:#46554C;">Enter your matriculation number to confirm eligibility.</div></div>
+            <div style="display:flex; gap:13px; align-items:flex-start;"><span style="width:24px; height:24px; border-radius:50%; background:#E2F0E7; color:#0E5A37; font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none;">2</span><div style="font-size:14px; line-height:1.5; color:#46554C;">Choose one candidate for each position, one page at a time.</div></div>
+            <div style="display:flex; gap:13px; align-items:flex-start;"><span style="width:24px; height:24px; border-radius:50%; background:#E2F0E7; color:#0E5A37; font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none;">3</span><div style="font-size:14px; line-height:1.5; color:#46554C;">Review your choices and submit. You receive a sealed receipt.</div></div>
+          </div>
+        </div>
+        <div style="background:#0E5A37; color:#E6F1EA; border-radius:15px; padding:26px;">
+          <h3 style="font-family:'Spectral',serif; font-size:19px; font-weight:600; margin:0 0 16px; color:#fff;">Your vote is protected</h3>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div style="display:flex; gap:11px; align-items:flex-start;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8932A" stroke-width="2.2" style="flex:none; margin-top:1px;"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg><div style="font-size:14px; line-height:1.5;"><strong style="color:#fff;">One vote per matric.</strong> A second attempt is automatically flagged.</div></div>
+            <div style="display:flex; gap:11px; align-items:flex-start;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8932A" stroke-width="2.2" style="flex:none; margin-top:1px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><div style="font-size:14px; line-height:1.5;"><strong style="color:#fff;">Anonymous ballot.</strong> Your identity is never linked to your selections.</div></div>
+            <div style="display:flex; gap:11px; align-items:flex-start;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8932A" stroke-width="2.2" style="flex:none; margin-top:1px;"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><div style="font-size:14px; line-height:1.5;"><strong style="color:#fff;">Independently observed.</strong> Accredited observers monitor the live count.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== LOGIN ===================== -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+  <div style="animation:fadeUp .4s ease both; min-height:calc(100vh - 36px); display:flex; align-items:center; justify-content:center; padding:40px 22px; background:radial-gradient(120% 100% at 50% -20%, #114D33 0%, #0A3D26 60%, #082E1D 100%);">
+    <div style="width:100%; max-width:430px;">
+      <div style="text-align:center; margin-bottom:24px;">
+        <div style="width:56px; height:56px; border-radius:50%; background:#0A3D26; border:1.5px solid #C8932A; display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px;">
+          <svg width="30" height="30" viewBox="0 0 46 46" fill="none"><path d="M23 7c5 6 5 12 0 18-5-6-5-12 0-18z" fill="#7FC79A"/><path d="M14 16c6 2 9 7 9 14-6-2-9-7-9-14z" fill="#C8932A"/><path d="M32 16c-6 2-9 7-9 14 6-2 9-7 9-14z" fill="#C8932A"/></svg>
+        </div>
+        <h1 style="font-family:'Spectral',serif; font-weight:600; font-size:25px; color:#F4F1E6; margin:0 0 6px;">Verify your eligibility</h1>
+        <p style="font-size:13.5px; color:#9FBFAE; margin:0;">Enter the matriculation number on your student record.</p>
+      </div>
+      <div style="background:#fff; border-radius:16px; padding:28px; box-shadow:0 20px 50px rgba(0,0,0,.35);">
+        <label style="display:block; font-size:13px; font-weight:600; color:#3A483F; margin-bottom:8px;">Matriculation number</label>
+        <input value="{{ matricInput }}" onInput="{{ onMatricInput }}" onKeyDown="{{ onMatricKey }}" placeholder="e.g. PUB/22/014" style="width:100%; padding:14px 15px; border:1.5px solid #D8D3C4; border-radius:10px; font-size:16px; letter-spacing:.04em; text-transform:uppercase; outline:none; transition:border-color .15s ease;" style-focus="border-color:#0E5A37;">
+        <sc-if value="{{ loginError }}" hint-placeholder-val="">
+          <div style="display:flex; gap:9px; align-items:flex-start; margin-top:12px; background:#FBEAEA; border:1px solid #F0CFCF; color:#A12B2B; padding:11px 13px; border-radius:9px; font-size:13px; line-height:1.45;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex:none; margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16.5v.01"/></svg>
+            <span>{{ loginError }}</span>
+          </div>
+        </sc-if>
+        <button onClick="{{ submitLogin }}" style="width:100%; margin-top:18px; background:#0E5A37; color:#fff; border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; transition:background .15s ease;" style-hover="background:#0B4A2D;">Verify &amp; continue</button>
+        <div style="margin-top:18px; padding-top:16px; border-top:1px dashed #E0DBCC; font-size:12px; color:#7A887E; line-height:1.6;">
+          <strong style="color:#46554C;">Demo numbers:</strong> PUB/22/014 · PUB/22/027 · PUB/23/102 &nbsp;<br>
+          <span style="color:#B0651F;">PUB/22/001</span> has already voted — try it to see the duplicate-vote flag.
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== BALLOT ===================== -->
+  <sc-if value="{{ isBallot }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:calc(100vh - 36px); background:#F2F0E6;">
+    <div style="background:#fff; border-bottom:1px solid #E4E0D4; padding:16px 24px;">
+      <div style="max-width:860px; margin:0 auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:12.5px; color:#5C6B61;">Voting as <strong style="color:#16241C;">{{ currentUserName }}</strong></span>
+          <span style="font-size:12.5px; font-weight:700; color:#0E5A37;">Position {{ positionNumber }} of {{ totalPositions }}</span>
+        </div>
+        <div style="height:7px; background:#E8E4D6; border-radius:99px; overflow:hidden;">
+          <div style="height:100%; background:linear-gradient(90deg,#0E5A37,#2DA05A); border-radius:99px; width:{{ progressPct }}%; transition:width .35s ease;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div key="{{ ballotKey }}" style="max-width:860px; margin:0 auto; padding:34px 24px 120px; animation:fadeUp .32s ease both;">
+      <div style="text-align:center; margin-bottom:26px;">
+        <div style="font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:#C8932A; font-weight:700; margin-bottom:8px;">Select one candidate</div>
+        <h2 style="font-family:'Spectral',serif; font-weight:600; font-size:32px; margin:0;">{{ currentPositionTitle }}</h2>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;">
+        <sc-for list="{{ currentCandidates }}" as="cand" hint-placeholder-count="3">
+          <div onClick="{{ cand.onSelect }}" style="background:#fff; border:2px solid {{ cand.borderColor }}; border-radius:15px; padding:20px; cursor:pointer; position:relative; transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease; box-shadow:{{ cand.shadow }};" style-hover="transform:translateY(-3px); box-shadow:0 14px 30px rgba(0,0,0,.12);">
+            <sc-if value="{{ cand.selected }}" hint-placeholder-val="">
+              <div style="position:absolute; top:13px; right:13px; width:26px; height:26px; border-radius:50%; background:#0E5A37; display:flex; align-items:center; justify-content:center; animation:popIn .3s ease;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>
+              </div>
+            </sc-if>
+            <div style="width:74px; height:74px; border-radius:50%; background:{{ cand.avatarBg }}; color:#fff; font-family:'Spectral',serif; font-size:26px; font-weight:600; display:flex; align-items:center; justify-content:center; margin-bottom:14px;">{{ cand.initials }}</div>
+            <div style="font-family:'Spectral',serif; font-size:19px; font-weight:600; line-height:1.2;">{{ cand.name }}</div>
+            <div style="font-size:12.5px; color:#6B7A6F; margin-top:3px;">{{ cand.level }}</div>
+            <button onClick="{{ cand.onView }}" style="margin-top:13px; background:transparent; border:1px solid #D8D3C4; color:#0E5A37; border-radius:8px; padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer; transition:background .15s ease;" style-hover="background:#F2F0E6;">View manifesto</button>
+          </div>
+        </sc-for>
+      </div>
+
+      <button onClick="{{ abstainCurrent }}" style="display:block; margin:22px auto 0; background:transparent; border:none; color:#8A968C; font-size:13px; cursor:pointer; text-decoration:underline; text-underline-offset:3px;">I prefer to abstain for this position</button>
+    </div>
+
+    <div style="position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #E4E0D4; padding:14px 24px; box-shadow:0 -6px 20px rgba(0,0,0,.06);">
+      <div style="max-width:860px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <button onClick="{{ prevPosition }}" style="background:#F2F0E6; border:1px solid #E0DBCC; color:#46554C; border-radius:10px; padding:12px 20px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>{{ prevLabel }}
+        </button>
+        <span style="font-size:12.5px; color:#8A968C;">{{ selectedCountLabel }}</span>
+        <button onClick="{{ nextPosition }}" style="background:#0E5A37; color:#fff; border:none; border-radius:10px; padding:12px 24px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px;" style-hover="background:#0B4A2D;">
+          {{ nextLabel }}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== REVIEW ===================== -->
+  <sc-if value="{{ isReview }}" hint-placeholder-val="{{ true }}">
+  <div style="animation:fadeUp .4s ease both; min-height:calc(100vh - 36px); background:#F2F0E6; padding:40px 22px 70px;">
+    <div style="max-width:640px; margin:0 auto;">
+      <div style="text-align:center; margin-bottom:28px;">
+        <div style="font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:#C8932A; font-weight:700; margin-bottom:8px;">Final step</div>
+        <h2 style="font-family:'Spectral',serif; font-weight:600; font-size:30px; margin:0 0 6px;">Review your ballot</h2>
+        <p style="font-size:14px; color:#5C6B61; margin:0;">Confirm your choices below. Once submitted, your ballot is sealed and cannot be changed.</p>
+      </div>
+      <div style="background:#fff; border:1px solid #E4E0D4; border-radius:15px; overflow:hidden;">
+        <sc-for list="{{ reviewItems }}" as="item" hint-placeholder-count="5">
+          <div style="display:flex; align-items:center; gap:14px; padding:16px 20px; border-bottom:1px solid #EFEBDE;">
+            <div style="width:44px; height:44px; border-radius:50%; background:{{ item.avatarBg }}; color:#fff; font-family:'Spectral',serif; font-size:16px; font-weight:600; display:flex; align-items:center; justify-content:center; flex:none;">{{ item.initials }}</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:#8A968C; font-weight:700;">{{ item.position }}</div>
+              <div style="font-family:'Spectral',serif; font-size:17px; font-weight:600; color:{{ item.nameColor }};">{{ item.name }}</div>
+            </div>
+            <button onClick="{{ item.onEdit }}" style="background:transparent; border:1px solid #D8D3C4; color:#0E5A37; border-radius:8px; padding:7px 13px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#F2F0E6;">Change</button>
+          </div>
+        </sc-for>
+      </div>
+      <button onClick="{{ submitBallot }}" style="width:100%; margin-top:20px; background:#0E5A37; color:#fff; border:none; border-radius:12px; padding:16px; font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 12px 28px rgba(14,90,55,.3);" style-hover="background:#0B4A2D;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Submit my sealed ballot
+      </button>
+      <button onClick="{{ backToBallot }}" style="display:block; margin:14px auto 0; background:transparent; border:none; color:#8A968C; font-size:13px; cursor:pointer; text-decoration:underline; text-underline-offset:3px;">Back to selection</button>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== SUCCESS ===================== -->
+  <sc-if value="{{ isSuccess }}" hint-placeholder-val="{{ true }}">
+  <div style="animation:fadeUp .4s ease both; min-height:calc(100vh - 36px); display:flex; align-items:center; justify-content:center; padding:40px 22px; background:radial-gradient(120% 100% at 50% -10%, #114D33 0%, #0A3D26 60%, #082E1D 100%);">
+    <div style="width:100%; max-width:440px; text-align:center; color:#F4F1E6;">
+      <div style="width:92px; height:92px; border-radius:50%; background:rgba(45,160,90,.18); border:2px solid #2DA05A; display:inline-flex; align-items:center; justify-content:center; margin-bottom:24px; animation:popIn .5s ease both;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7FE0A5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7" stroke-dasharray="60" style="animation:drawCheck .6s .25s ease both;"/></svg>
+      </div>
+      <h1 style="font-family:'Spectral',serif; font-weight:600; font-size:30px; margin:0 0 12px;">Your vote has been recorded</h1>
+      <p style="font-size:15px; line-height:1.6; color:#A9C4B5; margin:0 0 26px;">Thank you, {{ currentUserName }}. Your ballot has been sealed and added to the count. This matriculation number can no longer vote.</p>
+      <div style="background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16); border-radius:13px; padding:20px;">
+        <div style="font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:#8FB29E; margin-bottom:7px;">Your verification receipt</div>
+        <div style="font-family:'Spectral',serif; font-size:26px; font-weight:600; letter-spacing:.08em; color:#fff;">{{ receipt }}</div>
+        <div style="font-size:12px; color:#8FB29E; margin-top:7px;">Keep this code. Observers can confirm your ballot was counted without revealing your choices.</div>
+      </div>
+      <button onClick="{{ goPortal }}" style="margin-top:26px; background:#C8932A; color:#16241C; border:none; border-radius:10px; padding:13px 26px; font-size:14.5px; font-weight:700; cursor:pointer;">Return to home</button>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== FLAGGED ===================== -->
+  <sc-if value="{{ isFlagged }}" hint-placeholder-val="{{ true }}">
+  <div style="animation:fadeUp .4s ease both; min-height:calc(100vh - 36px); display:flex; align-items:center; justify-content:center; padding:40px 22px; background:radial-gradient(120% 100% at 50% -10%, #5A2418 0%, #3D1812 60%, #2C110D 100%);">
+    <div style="width:100%; max-width:440px; text-align:center; color:#F6E9E5;">
+      <div style="width:88px; height:88px; border-radius:50%; background:rgba(214,108,80,.18); border:2px solid #D66C50; display:inline-flex; align-items:center; justify-content:center; margin-bottom:22px; animation:popIn .45s ease both;">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#F0A78F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+      </div>
+      <div style="font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:#E8927A; font-weight:700; margin-bottom:10px;">Duplicate vote blocked</div>
+      <h1 style="font-family:'Spectral',serif; font-weight:600; font-size:28px; margin:0 0 12px;">This number has already voted</h1>
+      <p style="font-size:15px; line-height:1.6; color:#D8B6AC; margin:0 0 24px;">Matric <strong style="color:#fff;">{{ flaggedMatric }}</strong> cast a ballot at an earlier time. Each matriculation number is permitted exactly one vote, so this attempt has been recorded and flagged for review.</p>
+      <div style="background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:16px 20px; text-align:left; font-size:13px; line-height:1.6; color:#D8B6AC;">
+        If you believe this is an error, contact the electoral committee at the Department of Public Administration with your student ID. This incident reference: <strong style="color:#fff;">{{ flagRef }}</strong>
+      </div>
+      <button onClick="{{ goPortal }}" style="margin-top:24px; background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.2); border-radius:10px; padding:12px 24px; font-size:14px; font-weight:600; cursor:pointer;">Return to home</button>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== ADMIN ===================== -->
+  <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex; min-height:calc(100vh - 36px);">
+    <!-- sidebar -->
+    <div style="width:228px; flex:none; background:#0A3D26; color:#CFE0D6; padding:22px 14px; display:flex; flex-direction:column;">
+      <div style="display:flex; align-items:center; gap:10px; padding:0 8px 18px; border-bottom:1px solid rgba(255,255,255,.1); margin-bottom:14px;">
+        <div style="width:34px; height:34px; border-radius:8px; background:#0E5A37; border:1px solid #C8932A; display:flex; align-items:center; justify-content:center; flex:none;"><svg width="18" height="18" viewBox="0 0 46 46" fill="none"><path d="M23 7c5 6 5 12 0 18-5-6-5-12 0-18z" fill="#7FC79A"/><path d="M14 16c6 2 9 7 9 14-6-2-9-7-9-14z" fill="#C8932A"/><path d="M32 16c-6 2-9 7-9 14 6-2 9-7 9-14z" fill="#C8932A"/></svg></div>
+        <div style="line-height:1.2;"><div style="font-size:13px; font-weight:700; color:#fff;">Admin Console</div><div style="font-size:10.5px; color:#8FB29E;">PASA Election 2026</div></div>
+      </div>
+      <button onClick="{{ setAdminOverview }}" style="{{ admOverviewStyle }}">Overview</button>
+      <button onClick="{{ setAdminCandidates }}" style="{{ admCandidatesStyle }}">Candidates</button>
+      <button onClick="{{ setAdminEligibility }}" style="{{ admEligibilityStyle }}">Voter roster</button>
+      <button onClick="{{ setAdminResults }}" style="{{ admResultsStyle }}">Results</button>
+      <button onClick="{{ setAdminSettings }}" style="{{ admSettingsStyle }}">Settings</button>
+      <div style="margin-top:auto; padding:12px 10px 0; font-size:11px; color:#6F9682; line-height:1.5;">Signed in as<br><strong style="color:#CFE0D6;">Electoral Officer</strong></div>
+    </div>
+
+    <!-- admin content -->
+    <div style="flex:1; min-width:0; background:#F2F0E6; padding:30px 34px 60px;">
+
+      <!-- OVERVIEW -->
+      <sc-if value="{{ admIsOverview }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:fadeUp .3s ease both;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:22px;">
+          <div><h1 style="font-family:'Spectral',serif; font-weight:600; font-size:27px; margin:0 0 4px;">Election overview</h1><p style="font-size:13.5px; color:#5C6B61; margin:0;">Live status of the PASA Executive Election 2026.</p></div>
+          <span style="display:flex; align-items:center; gap:8px; background:#E2F0E7; color:#0E5A37; padding:8px 14px; border-radius:999px; font-size:13px; font-weight:700;"><span style="width:8px; height:8px; border-radius:50%; background:#2DA05A; animation:livePulse 2s infinite;"></span>Voting open</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px;">
+          <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:18px;"><div style="font-size:12px; color:#5C6B61;">Votes cast</div><div style="font-family:'Spectral',serif; font-size:30px; font-weight:600; color:#0E5A37; margin-top:4px;">{{ votesCast }}</div></div>
+          <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:18px;"><div style="font-size:12px; color:#5C6B61;">Eligible voters</div><div style="font-family:'Spectral',serif; font-size:30px; font-weight:600; color:#16241C; margin-top:4px;">{{ totalEligible }}</div></div>
+          <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:18px;"><div style="font-size:12px; color:#5C6B61;">Turnout</div><div style="font-family:'Spectral',serif; font-size:30px; font-weight:600; color:#16241C; margin-top:4px;">{{ turnoutPct }}%</div></div>
+          <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:18px;"><div style="font-size:12px; color:#5C6B61;">Flagged attempts</div><div style="font-family:'Spectral',serif; font-size:30px; font-weight:600; color:#B0651F; margin-top:4px;">{{ flaggedCount }}</div></div>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:14px; padding:22px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;"><h3 style="font-family:'Spectral',serif; font-size:18px; font-weight:600; margin:0;">Turnout progress</h3><span style="font-size:12.5px; color:#5C6B61;">{{ votesCast }} of {{ totalEligible }} voters</span></div>
+          <div style="height:14px; background:#EDEADD; border-radius:99px; overflow:hidden; margin-bottom:18px;"><div style="height:100%; background:linear-gradient(90deg,#0E5A37,#2DA05A); border-radius:99px; width:{{ turnoutPct }}%;"></div></div>
+          <div style="display:flex; gap:22px; flex-wrap:wrap; font-size:13px; color:#46554C;">
+            <span>Opened: 18 Jun 2026, 9:00 AM</span><span>Closes: 18 Jun 2026, 4:00 PM</span><span>Positions: 5</span><span>Candidates: 12</span>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- CANDIDATES -->
+      <sc-if value="{{ admIsCandidates }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:fadeUp .3s ease both;">
+        <h1 style="font-family:'Spectral',serif; font-weight:600; font-size:27px; margin:0 0 4px;">Manage candidates</h1>
+        <p style="font-size:13.5px; color:#5C6B61; margin:0 0 22px;">Add or review accredited candidates for each position.</p>
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:18px; margin-bottom:22px; display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+          <div style="flex:1; min-width:160px;"><label style="display:block; font-size:12px; font-weight:600; color:#46554C; margin-bottom:6px;">Position</label>
+            <select value="{{ newCandPos }}" onChange="{{ onNewCandPos }}" style="width:100%; padding:11px 12px; border:1.5px solid #D8D3C4; border-radius:9px; font-size:14px; background:#fff; outline:none;">
+              <sc-for list="{{ positionOptions }}" as="opt" hint-placeholder-count="5"><option value="{{ opt.id }}">{{ opt.title }}</option></sc-for>
+            </select>
+          </div>
+          <div style="flex:2; min-width:200px;"><label style="display:block; font-size:12px; font-weight:600; color:#46554C; margin-bottom:6px;">Candidate name</label>
+            <input value="{{ newCandName }}" onInput="{{ onNewCandName }}" placeholder="Full name" style="width:100%; padding:11px 12px; border:1.5px solid #D8D3C4; border-radius:9px; font-size:14px; outline:none;" style-focus="border-color:#0E5A37;">
+          </div>
+          <button onClick="{{ addCandidate }}" style="background:#0E5A37; color:#fff; border:none; border-radius:9px; padding:12px 20px; font-size:14px; font-weight:700; cursor:pointer;" style-hover="background:#0B4A2D;">Add candidate</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:18px;">
+          <sc-for list="{{ adminPositions }}" as="pos" hint-placeholder-count="5">
+            <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:18px 20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;"><h3 style="font-family:'Spectral',serif; font-size:17px; font-weight:600; margin:0;">{{ pos.title }}</h3><span style="font-size:12px; color:#8A968C; background:#F2F0E6; padding:4px 10px; border-radius:99px;">{{ pos.count }} candidates</span></div>
+              <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                <sc-for list="{{ pos.candidates }}" as="c" hint-placeholder-count="3">
+                  <div style="display:flex; align-items:center; gap:10px; background:#F7F5EC; border:1px solid #EAE6D8; border-radius:10px; padding:8px 12px 8px 8px;">
+                    <div style="width:34px; height:34px; border-radius:50%; background:{{ c.avatarBg }}; color:#fff; font-family:'Spectral',serif; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center;">{{ c.initials }}</div>
+                    <div style="line-height:1.25;"><div style="font-size:13.5px; font-weight:600;">{{ c.name }}</div><div style="font-size:11px; color:#8A968C;">{{ c.level }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ELIGIBILITY -->
+      <sc-if value="{{ admIsEligibility }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:fadeUp .3s ease both;">
+        <h1 style="font-family:'Spectral',serif; font-weight:600; font-size:27px; margin:0 0 4px;">Voter roster</h1>
+        <p style="font-size:13.5px; color:#5C6B61; margin:0 0 22px;">Upload the eligibility dataset. Only matriculation numbers on this list may vote.</p>
+        <sc-if value="{{ rosterNotLoaded }}" hint-placeholder-val="{{ true }}">
+          <div onClick="{{ loadRoster }}" style="background:#fff; border:2px dashed #C9C3B0; border-radius:15px; padding:48px 24px; text-align:center; cursor:pointer; transition:border-color .15s ease, background .15s ease;" style-hover="border-color:#0E5A37; background:#FBFAF3;">
+            <div style="width:54px; height:54px; border-radius:12px; background:#E2F0E7; display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E5A37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg></div>
+            <div style="font-size:16px; font-weight:700; color:#16241C; margin-bottom:6px;">Drop your CSV or Excel file here</div>
+            <div style="font-size:13px; color:#7A887E;">or click to browse · accepts .csv, .xlsx · column: matric_number, full_name</div>
+            <div style="margin-top:16px; font-size:12px; color:#B0651F;">Click to load the sample roster (312 students)</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ rosterLoaded }}" hint-placeholder-val="">
+          <div style="background:#fff; border:1px solid #E4E0D4; border-radius:14px; overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #EFEBDE; background:#F7F5EC;">
+              <div style="display:flex; align-items:center; gap:10px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E5A37" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><div><div style="font-size:14px; font-weight:700;">pubadmin_roster_2026.csv</div><div style="font-size:12px; color:#8A968C;">312 eligible voters · uploaded just now</div></div></div>
+              <button onClick="{{ loadRoster }}" style="background:#F2F0E6; border:1px solid #E0DBCC; color:#46554C; border-radius:8px; padding:8px 14px; font-size:12.5px; font-weight:600; cursor:pointer;">Replace file</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1.2fr 1.6fr .8fr; padding:11px 20px; background:#FBFAF3; border-bottom:1px solid #EFEBDE; font-size:11.5px; letter-spacing:.05em; text-transform:uppercase; color:#8A968C; font-weight:700;"><span>Matric number</span><span>Full name</span><span>Status</span></div>
+            <sc-for list="{{ rosterRows }}" as="r" hint-placeholder-count="8">
+              <div style="display:grid; grid-template-columns:1.2fr 1.6fr .8fr; padding:12px 20px; border-bottom:1px solid #F2EEE2; font-size:13.5px; align-items:center;">
+                <span style="font-weight:600; letter-spacing:.02em;">{{ r.matric }}</span><span style="color:#46554C;">{{ r.name }}</span>
+                <span><span style="font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:99px; background:{{ r.badgeBg }}; color:{{ r.badgeColor }};">{{ r.status }}</span></span>
+              </div>
+            </sc-for>
+            <div style="padding:12px 20px; font-size:12px; color:#8A968C; text-align:center;">Showing first 8 of 312 records</div>
+          </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- ADMIN RESULTS -->
+      <sc-if value="{{ admIsResults }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:fadeUp .3s ease both;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:22px;">
+          <div><h1 style="font-family:'Spectral',serif; font-weight:600; font-size:27px; margin:0 0 4px;">Live results</h1><p style="font-size:13.5px; color:#5C6B61; margin:0;">Tallies update as each ballot is sealed.</p></div>
+          <div style="display:flex; gap:8px;">
+            <button onClick="{{ exportCsv }}" style="background:#fff; border:1px solid #D8D3C4; color:#46554C; border-radius:8px; padding:9px 14px; font-size:12.5px; font-weight:600; cursor:pointer;">Export CSV</button>
+            <button onClick="{{ exportPdf }}" style="background:#fff; border:1px solid #D8D3C4; color:#46554C; border-radius:8px; padding:9px 14px; font-size:12.5px; font-weight:600; cursor:pointer;">Export PDF</button>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:18px;">
+          <sc-for list="{{ resultsPositions }}" as="pos" hint-placeholder-count="5">
+            <div style="background:#fff; border:1px solid #E4E0D4; border-radius:14px; padding:22px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;"><h3 style="font-family:'Spectral',serif; font-size:18px; font-weight:600; margin:0;">{{ pos.title }}</h3><span style="font-size:12.5px; color:#8A968C;">{{ pos.total }} votes</span></div>
+              <div style="display:flex; flex-direction:column; gap:14px;">
+                <sc-for list="{{ pos.candidates }}" as="c" hint-placeholder-count="3">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><span style="font-size:14px; font-weight:600; color:{{ c.nameColor }}; display:flex; align-items:center; gap:8px;">{{ c.name }}<sc-if value="{{ c.leading }}" hint-placeholder-val="">​<span style="font-size:10.5px; font-weight:700; background:#C8932A; color:#16241C; padding:2px 8px; border-radius:99px;">LEADING</span></sc-if></span><span style="font-size:13px; color:#5C6B61;">{{ c.votes }} · {{ c.pct }}%</span></div>
+                    <div style="height:11px; background:#EDEADD; border-radius:99px; overflow:hidden;"><div style="height:100%; background:{{ c.barColor }}; border-radius:99px; width:{{ c.pct }}%; animation:growBar .8s ease both;"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- SETTINGS -->
+      <sc-if value="{{ admIsSettings }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:fadeUp .3s ease both; max-width:620px;">
+        <h1 style="font-family:'Spectral',serif; font-weight:600; font-size:27px; margin:0 0 4px;">Election settings</h1>
+        <p style="font-size:13.5px; color:#5C6B61; margin:0 0 22px;">This system is white-label — reuse it for any faculty or department by updating these fields.</p>
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:14px; padding:24px; display:flex; flex-direction:column; gap:16px;">
+          <div><label style="display:block; font-size:12.5px; font-weight:600; color:#46554C; margin-bottom:6px;">Institution</label><input value="{{ cfgInstitution }}" onInput="{{ onCfgInstitution }}" style="width:100%; padding:11px 13px; border:1.5px solid #D8D3C4; border-radius:9px; font-size:14px; outline:none;" style-focus="border-color:#0E5A37;"></div>
+          <div><label style="display:block; font-size:12.5px; font-weight:600; color:#46554C; margin-bottom:6px;">Faculty</label><input value="{{ cfgFaculty }}" onInput="{{ onCfgFaculty }}" style="width:100%; padding:11px 13px; border:1.5px solid #D8D3C4; border-radius:9px; font-size:14px; outline:none;" style-focus="border-color:#0E5A37;"></div>
+          <div><label style="display:block; font-size:12.5px; font-weight:600; color:#46554C; margin-bottom:6px;">Department</label><input value="{{ cfgDept }}" onInput="{{ onCfgDept }}" style="width:100%; padding:11px 13px; border:1.5px solid #D8D3C4; border-radius:9px; font-size:14px; outline:none;" style-focus="border-color:#0E5A37;"></div>
+          <div style="display:flex; gap:14px;">
+            <div style="flex:1;"><label style="display:block; font-size:12.5px; font-weight:600; color:#46554C; margin-bottom:6px;">Voting opens</label><input value="18 Jun 2026, 9:00 AM" style="width:100%; padding:11px 13px; border:1.5px solid #D8D3C4; border-radius:9px; font-size:14px; outline:none;"></div>
+            <div style="flex:1;"><label style="display:block; font-size:12.5px; font-weight:600; color:#46554C; margin-bottom:6px;">Voting closes</label><input value="18 Jun 2026, 4:00 PM" style="width:100%; padding:11px 13px; border:1.5px solid #D8D3C4; border-radius:9px; font-size:14px; outline:none;"></div>
+          </div>
+          <button onClick="{{ saveSettings }}" style="align-self:flex-start; background:#0E5A37; color:#fff; border:none; border-radius:9px; padding:12px 22px; font-size:14px; font-weight:700; cursor:pointer;" style-hover="background:#0B4A2D;">Save changes</button>
+        </div>
+      </div>
+      </sc-if>
+
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== OBSERVER ===================== -->
+  <sc-if value="{{ isObserver }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:calc(100vh - 36px); background:#F2F0E6;">
+    <div style="background:#0A3D26; color:#F4F1E6; padding:16px 30px; display:flex; align-items:center; gap:14px;">
+      <div style="width:36px; height:36px; border-radius:8px; background:#0E5A37; border:1px solid #C8932A; display:flex; align-items:center; justify-content:center; flex:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F1E6" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></div>
+      <div style="line-height:1.25;"><div style="font-size:15px; font-weight:700;">Observer Portal</div><div style="font-size:11.5px; color:#9FBFAE;">Read-only access · accredited monitor</div></div>
+      <span style="margin-left:auto; display:flex; align-items:center; gap:8px; background:rgba(45,160,90,.16); color:#9FE3B6; padding:7px 13px; border-radius:999px; font-size:12.5px; font-weight:700;"><span style="width:8px; height:8px; border-radius:50%; background:#2DA05A; animation:livePulse 2s infinite;"></span>Live</span>
+    </div>
+
+    <div style="max-width:920px; margin:0 auto; padding:30px 24px 60px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap; gap:14px;">
+        <div><h1 style="font-family:'Spectral',serif; font-weight:600; font-size:26px; margin:0 0 4px;">Results monitor</h1><p style="font-size:13.5px; color:#5C6B61; margin:0;">You may view and export results. Editing is disabled for observers.</p></div>
+        <div style="display:flex; gap:8px;">
+          <button onClick="{{ exportCsv }}" style="background:#fff; border:1px solid #D8D3C4; color:#46554C; border-radius:9px; padding:10px 15px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:7px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>CSV</button>
+          <button onClick="{{ exportXlsx }}" style="background:#fff; border:1px solid #D8D3C4; color:#46554C; border-radius:9px; padding:10px 15px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:7px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>Excel</button>
+          <button onClick="{{ exportPdf }}" style="background:#0E5A37; color:#fff; border:none; border-radius:9px; padding:10px 15px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:7px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>PDF</button>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:22px;">
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:18px;"><div style="font-size:12px; color:#5C6B61;">Votes cast</div><div style="font-family:'Spectral',serif; font-size:28px; font-weight:600; color:#0E5A37; margin-top:4px;">{{ votesCast }}</div></div>
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:18px;"><div style="font-size:12px; color:#5C6B61;">Turnout</div><div style="font-family:'Spectral',serif; font-size:28px; font-weight:600; color:#16241C; margin-top:4px;">{{ turnoutPct }}%</div></div>
+        <div style="background:#fff; border:1px solid #E4E0D4; border-radius:13px; padding:18px;"><div style="font-size:12px; color:#5C6B61;">Flagged attempts</div><div style="font-family:'Spectral',serif; font-size:28px; font-weight:600; color:#B0651F; margin-top:4px;">{{ flaggedCount }}</div></div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <sc-for list="{{ resultsPositions }}" as="pos" hint-placeholder-count="5">
+          <div style="background:#fff; border:1px solid #E4E0D4; border-radius:14px; padding:22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;"><h3 style="font-family:'Spectral',serif; font-size:18px; font-weight:600; margin:0;">{{ pos.title }}</h3><span style="font-size:12.5px; color:#8A968C;">{{ pos.total }} votes</span></div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <sc-for list="{{ pos.candidates }}" as="c" hint-placeholder-count="3">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><span style="font-size:14px; font-weight:600; color:{{ c.nameColor }}; display:flex; align-items:center; gap:8px;">{{ c.name }}<sc-if value="{{ c.leading }}" hint-placeholder-val="">​<span style="font-size:10.5px; font-weight:700; background:#C8932A; color:#16241C; padding:2px 8px; border-radius:99px;">LEADING</span></sc-if></span><span style="font-size:13px; color:#5C6B61;">{{ c.votes }} · {{ c.pct }}%</span></div>
+                  <div style="height:11px; background:#EDEADD; border-radius:99px; overflow:hidden;"><div style="height:100%; background:{{ c.barColor }}; border-radius:99px; width:{{ c.pct }}%; animation:growBar .8s ease both;"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== CANDIDATE MODAL ===================== -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="">
+  <div onClick="{{ closeModal }}" style="position:fixed; inset:0; background:rgba(10,30,20,.55); z-index:80; display:flex; align-items:center; justify-content:center; padding:24px; animation:fadeUp .25s ease both;">
+    <div onClick="{{ stopProp }}" style="background:#fff; border-radius:18px; max-width:460px; width:100%; overflow:hidden; box-shadow:0 30px 70px rgba(0,0,0,.4);">
+      <div style="background:{{ modalBg }}; padding:28px; display:flex; align-items:center; gap:16px; color:#fff;">
+        <div style="width:72px; height:72px; border-radius:50%; background:rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.5); font-family:'Spectral',serif; font-size:26px; font-weight:600; display:flex; align-items:center; justify-content:center; flex:none;">{{ modalInitials }}</div>
+        <div><div style="font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; opacity:.85; font-weight:700;">{{ modalPosition }}</div><div style="font-family:'Spectral',serif; font-size:23px; font-weight:600; margin-top:2px;">{{ modalName }}</div><div style="font-size:12.5px; opacity:.85; margin-top:2px;">{{ modalLevel }}</div></div>
+      </div>
+      <div style="padding:24px 28px 28px;">
+        <div style="font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:#8A968C; font-weight:700; margin-bottom:8px;">Manifesto</div>
+        <p style="font-size:14.5px; line-height:1.65; color:#3A483F; margin:0 0 18px;">{{ modalManifesto }}</p>
+        <div style="display:flex; gap:10px;">
+          <button onClick="{{ closeModal }}" style="flex:1; background:#F2F0E6; border:1px solid #E0DBCC; color:#46554C; border-radius:10px; padding:12px; font-size:14px; font-weight:600; cursor:pointer;">Close</button>
+          <sc-if value="{{ modalCanSelect }}" hint-placeholder-val="">
+            <button onClick="{{ modalSelect }}" style="flex:1; background:#0E5A37; color:#fff; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:700; cursor:pointer;" style-hover="background:#0B4A2D;">Select this candidate</button>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===================== TOAST ===================== -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="">
+  <div style="position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:#16241C; color:#F4F1E6; padding:13px 22px; border-radius:11px; font-size:13.5px; font-weight:600; box-shadow:0 14px 36px rgba(0,0,0,.3); z-index:90; display:flex; align-items:center; gap:10px; animation:toastIn .3s ease both;">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7FE0A5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>
+    {{ toast }}
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const P = (id, title, cands) => ({ id, title, candidates: cands });
+    const c = (id, name, level, bg, votes, manifesto) => ({ id, name, level, avatarBg: bg, votes, manifesto });
+    const G1 = '#0E5A37', G2 = '#137A49', GD = '#0A3D26', GOLD = '#9A6B12', TEAL = '#1F6E5E', OLIVE = '#5C6B1E';
+    const positions = [
+      P('pres', 'President', [
+        c('p1', 'Adeyemi Tunde', 'HND II · Public Admin', G1, 96, 'A transparent administration with monthly open-book accounts and a student welfare desk in every level.'),
+        c('p2', 'Okafor Chidinma', 'ND II · Public Admin', GOLD, 78, 'Stronger industrial-training placements and a peer mentorship scheme pairing finalists with new intakes.'),
+        c('p3', 'Bello Aisha', 'HND I · Public Admin', TEAL, 51, 'Digitised association records and a 24-hour grievance response charter for every student concern.'),
+      ]),
+      P('vp', 'Vice President', [
+        c('v1', 'Lawal Ibrahim', 'HND I · Public Admin', OLIVE, 102, 'Revitalise departmental clubs and host a termly leadership summit with public-sector guests.'),
+        c('v2', 'Eze Ngozi', 'ND II · Public Admin', G2, 118, 'Expand female participation in association leadership and create a study-resource library.'),
+      ]),
+      P('gsec', 'General Secretary', [
+        c('g1', 'Ojo Damilola', 'ND II · Public Admin', GD, 88, 'Publish minutes within 48 hours of every meeting and maintain a live calendar of events.'),
+        c('g2', 'Hassan Fatima', 'HND I · Public Admin', GOLD, 131, 'A single notice board — physical and online — so no student misses an announcement again.'),
+      ]),
+      P('fsec', 'Financial Secretary', [
+        c('f1', 'Adebayo Seun', 'HND II · Public Admin', TEAL, 109, 'Itemised dues, quarterly audits read aloud at congress, and zero hidden levies.'),
+        c('f2', 'Yusuf Maryam', 'ND II · Public Admin', G1, 112, 'A digital dues tracker so every student sees exactly where their money goes.'),
+      ]),
+      P('pro', 'Public Relations Officer', [
+        c('r1', 'Nwosu Emeka', 'ND II · Public Admin', OLIVE, 94, 'Revamp our social presence and broadcast every event in real time to all members.'),
+        c('r2', 'Salami Tobi', 'HND I · Public Admin', GOLD, 125, 'A weekly bulletin and a rapid-response line connecting students to the executive.'),
+      ]),
+    ];
+    const roster = {
+      'PUB/22/001': 'Adeola Bankole',
+      'PUB/22/014': 'Chinedu Okeke',
+      'PUB/22/027': 'Fatima Bello',
+      'PUB/22/043': 'Grace Adeyinka',
+      'PUB/21/008': 'Ibrahim Sule',
+      'PUB/23/102': 'Joy Ekanem',
+      'PUB/22/055': 'Kunle Ajayi',
+      'PUB/23/077': 'Halima Yusuf',
+    };
+    this.state = {
+      view: 'portal',
+      positions,
+      roster,
+      voted: { 'PUB/22/001': true },
+      matricInput: '',
+      loginError: '',
+      currentUser: null,
+      ballotIndex: 0,
+      selections: {},
+      receipt: '',
+      flaggedMatric: '',
+      flagRef: '',
+      flaggedCount: 3,
+      adminTab: 'overview',
+      rosterLoaded: false,
+      newCandPos: 'pres',
+      newCandName: '',
+      modal: null,
+      toast: '',
+      cfg: {
+        institution: 'Oyo State College of Agriculture and Technology',
+        faculty: 'Faculty of Management & Communication Studies',
+        dept: 'Department of Public Administration',
+      },
+    };
+    this._toastTimer = null;
+  }
+
+  go(view) { this.setState({ view }); window.scrollTo(0, 0); }
+  showToast(msg) {
+    if (this._toastTimer) clearTimeout(this._toastTimer);
+    this.setState({ toast: msg });
+    this._toastTimer = setTimeout(() => this.setState({ toast: '' }), 2600);
+  }
+  initialsOf(name) {
+    const parts = name.trim().split(/\s+/);
+    return ((parts[0] || '')[0] || '' + (parts[1] ? parts[1][0] : '')).toUpperCase().slice(0, 2) || (parts[1] ? (parts[0][0] + parts[1][0]).toUpperCase() : name.slice(0, 2).toUpperCase());
+  }
+  inits(name) {
+    const p = name.trim().split(/\s+/);
+    return ((p[0] ? p[0][0] : '') + (p[1] ? p[1][0] : '')).toUpperCase();
+  }
+
+  // ---- login ----
+  submitLogin() {
+    const raw = (this.state.matricInput || '').trim().toUpperCase();
+    if (!raw) { this.setState({ loginError: 'Please enter your matriculation number.' }); return; }
+    const name = this.state.roster[raw];
+    if (!name) { this.setState({ loginError: 'This matriculation number is not on the eligible voter roster. Confirm it matches your student record.' }); return; }
+    if (this.state.voted[raw]) {
+      this.setState({ loginError: '', flaggedMatric: raw, flagRef: 'FLG-' + Math.random().toString(36).slice(2, 7).toUpperCase(), flaggedCount: this.state.flaggedCount + 1, view: 'flagged' });
+      window.scrollTo(0, 0); return;
+    }
+    this.setState({ loginError: '', currentUser: { matric: raw, name }, ballotIndex: 0, selections: {}, view: 'ballot' });
+    window.scrollTo(0, 0);
+  }
+  onMatricInput(e) { this.setState({ matricInput: e.target.value, loginError: '' }); }
+  onMatricKey(e) { if (e.key === 'Enter') this.submitLogin(); }
+
+  // ---- ballot ----
+  selectCand(posId, candId) {
+    this.setState(s => ({ selections: { ...s.selections, [posId]: candId }, modal: null }));
+  }
+  abstain(posId) { this.setState(s => { const sel = { ...s.selections }; sel[posId] = '__abstain__'; return { selections: sel }; }); }
+  nextPosition() {
+    const { ballotIndex, positions } = this.state;
+    if (ballotIndex < positions.length - 1) { this.setState({ ballotIndex: ballotIndex + 1 }); window.scrollTo(0, 0); }
+    else { this.setState({ view: 'review' }); window.scrollTo(0, 0); }
+  }
+  prevPosition() {
+    const { ballotIndex } = this.state;
+    if (ballotIndex > 0) { this.setState({ ballotIndex: ballotIndex - 1 }); window.scrollTo(0, 0); }
+    else { this.setState({ view: 'landing' }); window.scrollTo(0, 0); }
+  }
+  editPosition(idx) { this.setState({ ballotIndex: idx, view: 'ballot' }); window.scrollTo(0, 0); }
+  submitBallot() {
+    const { selections, positions, currentUser } = this.state;
+    const newPos = positions.map(p => {
+      const pick = selections[p.id];
+      if (!pick || pick === '__abstain__') return p;
+      return { ...p, candidates: p.candidates.map(c => c.id === pick ? { ...c, votes: c.votes + 1 } : c) };
+    });
+    const voted = { ...this.state.voted };
+    if (currentUser) voted[currentUser.matric] = true;
+    this.setState({ positions: newPos, voted, receipt: 'OYS-' + Math.random().toString(36).slice(2, 6).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(), view: 'success' });
+    window.scrollTo(0, 0);
+  }
+
+  // ---- admin ----
+  addCandidate() {
+    const name = (this.state.newCandName || '').trim();
+    if (!name) { this.showToast('Enter a candidate name first.'); return; }
+    const palette = ['#0E5A37', '#9A6B12', '#1F6E5E', '#5C6B1E', '#137A49', '#0A3D26'];
+    const bg = palette[Math.floor(Math.random() * palette.length)];
+    const positions = this.state.positions.map(p => p.id === this.state.newCandPos
+      ? { ...p, candidates: [...p.candidates, { id: 'n' + Date.now(), name, level: 'Public Admin', avatarBg: bg, votes: 0, manifesto: 'Manifesto pending submission to the electoral committee.' }] }
+      : p);
+    this.setState({ positions, newCandName: '' });
+    this.showToast('Candidate added.');
+  }
+  loadRoster() { this.setState({ rosterLoaded: true }); this.showToast('Roster uploaded · 312 voters validated.'); }
+  saveSettings() { this.showToast('Election settings saved.'); }
+  export(kind) { this.showToast('Generating ' + kind + ' report…'); }
+
+  renderVals() {
+    const s = this.state;
+    const view = s.view;
+    const positions = s.positions;
+    const totalEligible = 312;
+    const presTotal = positions[0].candidates.reduce((a, c) => a + c.votes, 0);
+    const votesCast = presTotal;
+    const turnoutPct = Math.round((votesCast / totalEligible) * 100);
+
+    const navStyle = (active) => `border:none; border-radius:7px; padding:6px 13px; font-size:12px; font-weight:600; cursor:pointer; transition:background .15s ease; background:${active ? '#C8932A' : 'rgba(255,255,255,.08)'}; color:${active ? '#16241C' : '#CFE6D8'};`;
+    const sideStyle = (active) => `text-align:left; border:none; border-radius:9px; padding:10px 13px; font-size:13.5px; font-weight:600; cursor:pointer; margin-bottom:3px; transition:background .15s ease; background:${active ? '#0E5A37' : 'transparent'}; color:${active ? '#fff' : '#A9C4B5'};`;
+
+    // ballot current
+    const idx = s.ballotIndex;
+    const pos = positions[Math.min(idx, positions.length - 1)] || positions[0];
+    const sel = s.selections[pos.id];
+    const currentCandidates = pos.candidates.map(cd => {
+      const selected = sel === cd.id;
+      return {
+        ...cd,
+        initials: this.inits(cd.name),
+        selected,
+        borderColor: selected ? '#0E5A37' : '#E8E4D6',
+        shadow: selected ? '0 10px 26px rgba(14,90,55,.18)' : '0 2px 8px rgba(0,0,0,.04)',
+        onSelect: () => this.selectCand(pos.id, cd.id),
+        onView: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({ modal: { ...cd, positionTitle: pos.title, posId: pos.id } }); },
+      };
+    });
+
+    // review
+    const reviewItems = positions.map(p => {
+      const pick = s.selections[p.id];
+      const cd = p.candidates.find(c => c.id === pick);
+      if (!cd) return { position: p.title, name: 'No selection (abstained)', initials: '—', avatarBg: '#9AA89D', nameColor: '#8A968C', onEdit: () => this.editPosition(positions.indexOf(p)) };
+      return { position: p.title, name: cd.name, initials: this.inits(cd.name), avatarBg: cd.avatarBg, nameColor: '#16241C', onEdit: () => this.editPosition(positions.indexOf(p)) };
+    });
+
+    // results
+    const barPalette = ['#0E5A37', '#C8932A', '#1F6E5E', '#5C6B1E', '#137A49', '#0A3D26'];
+    const resultsPositions = positions.map(p => {
+      const total = p.candidates.reduce((a, c) => a + c.votes, 0);
+      const max = Math.max(...p.candidates.map(c => c.votes), 0);
+      return {
+        title: p.title,
+        total,
+        candidates: p.candidates.map((c, i) => ({
+          name: c.name,
+          votes: c.votes,
+          pct: total ? Math.round((c.votes / total) * 100) : 0,
+          leading: c.votes === max && total > 0,
+          barColor: c.votes === max ? '#C8932A' : barPalette[i % barPalette.length],
+          nameColor: '#16241C',
+        })),
+      };
+    });
+
+    // admin candidates view
+    const adminPositions = positions.map(p => ({
+      title: p.title,
+      count: p.candidates.length,
+      candidates: p.candidates.map(c => ({ name: c.name, level: c.level, avatarBg: c.avatarBg, initials: this.inits(c.name) })),
+    }));
+    const positionOptions = positions.map(p => ({ id: p.id, title: p.title }));
+
+    // roster rows
+    const rosterRows = Object.keys(s.roster).map(m => {
+      const v = !!s.voted[m];
+      return { matric: m, name: s.roster[m], status: v ? 'Voted' : 'Not voted', badgeBg: v ? '#E2F0E7' : '#F2EFE4', badgeColor: v ? '#0E5A37' : '#8A968C' };
+    });
+
+    // modal
+    const m = s.modal;
+
+    return {
+      // view flags
+      isPortal: view === 'portal', isLanding: view === 'landing', isLogin: view === 'login',
+      isBallot: view === 'ballot', isReview: view === 'review', isSuccess: view === 'success',
+      isFlagged: view === 'flagged', isAdmin: view === 'admin', isObserver: view === 'observer',
+
+      // nav
+      goPortal: () => this.go('portal'),
+      goLandingVoter: () => this.go('landing'),
+      goLogin: () => { this.setState({ matricInput: '', loginError: '' }); this.go('login'); },
+      goAdmin: () => this.go('admin'),
+      goObserver: () => this.go('observer'),
+      navHomeStyle: navStyle(view === 'portal'),
+      navVoterStyle: navStyle(['landing', 'login', 'ballot', 'review', 'success', 'flagged'].includes(view)),
+      navAdminStyle: navStyle(view === 'admin'),
+      navObserverStyle: navStyle(view === 'observer'),
+
+      // login
+      matricInput: s.matricInput,
+      loginError: s.loginError,
+      onMatricInput: (e) => this.onMatricInput(e),
+      onMatricKey: (e) => this.onMatricKey(e),
+      submitLogin: () => this.submitLogin(),
+
+      // ballot
+      currentUserName: s.currentUser ? s.currentUser.name : 'Student',
+      positionNumber: idx + 1,
+      totalPositions: positions.length,
+      progressPct: Math.round(((idx + 1) / positions.length) * 100),
+      currentPositionTitle: pos.title,
+      currentCandidates,
+      ballotKey: 'pos-' + idx,
+      prevLabel: idx === 0 ? 'Back' : 'Previous',
+      nextLabel: idx === positions.length - 1 ? 'Review ballot' : 'Next position',
+      selectedCountLabel: sel ? (sel === '__abstain__' ? 'Abstained' : 'Selection made') : 'No selection yet',
+      prevPosition: () => this.prevPosition(),
+      nextPosition: () => this.nextPosition(),
+      abstainCurrent: () => this.abstain(pos.id),
+
+      // review
+      reviewItems,
+      submitBallot: () => this.submitBallot(),
+      backToBallot: () => { this.setState({ view: 'ballot' }); window.scrollTo(0, 0); },
+
+      // success / flagged
+      receipt: s.receipt,
+      flaggedMatric: s.flaggedMatric,
+      flagRef: s.flagRef,
+
+      // admin
+      setAdminOverview: () => this.setState({ adminTab: 'overview' }),
+      setAdminCandidates: () => this.setState({ adminTab: 'candidates' }),
+      setAdminEligibility: () => this.setState({ adminTab: 'eligibility' }),
+      setAdminResults: () => this.setState({ adminTab: 'results' }),
+      setAdminSettings: () => this.setState({ adminTab: 'settings' }),
+      admOverviewStyle: sideStyle(s.adminTab === 'overview'),
+      admCandidatesStyle: sideStyle(s.adminTab === 'candidates'),
+      admEligibilityStyle: sideStyle(s.adminTab === 'eligibility'),
+      admResultsStyle: sideStyle(s.adminTab === 'results'),
+      admSettingsStyle: sideStyle(s.adminTab === 'settings'),
+      admIsOverview: s.adminTab === 'overview',
+      admIsCandidates: s.adminTab === 'candidates',
+      admIsEligibility: s.adminTab === 'eligibility',
+      admIsResults: s.adminTab === 'results',
+      admIsSettings: s.adminTab === 'settings',
+
+      votesCast, totalEligible, turnoutPct, flaggedCount: s.flaggedCount,
+
+      adminPositions, positionOptions, resultsPositions,
+      newCandPos: s.newCandPos, newCandName: s.newCandName,
+      onNewCandPos: (e) => this.setState({ newCandPos: e.target.value }),
+      onNewCandName: (e) => this.setState({ newCandName: e.target.value }),
+      addCandidate: () => this.addCandidate(),
+
+      rosterLoaded: s.rosterLoaded, rosterNotLoaded: !s.rosterLoaded,
+      rosterRows, loadRoster: () => this.loadRoster(),
+
+      cfgInstitution: s.cfg.institution, cfgFaculty: s.cfg.faculty, cfgDept: s.cfg.dept,
+      onCfgInstitution: (e) => this.setState({ cfg: { ...s.cfg, institution: e.target.value } }),
+      onCfgFaculty: (e) => this.setState({ cfg: { ...s.cfg, faculty: e.target.value } }),
+      onCfgDept: (e) => this.setState({ cfg: { ...s.cfg, dept: e.target.value } }),
+      saveSettings: () => this.saveSettings(),
+
+      // export
+      exportCsv: () => this.export('CSV'),
+      exportXlsx: () => this.export('Excel'),
+      exportPdf: () => this.export('PDF'),
+
+      // modal
+      modalOpen: !!m,
+      modalInitials: m ? this.inits(m.name) : '',
+      modalName: m ? m.name : '',
+      modalLevel: m ? m.level : '',
+      modalPosition: m ? m.positionTitle : '',
+      modalManifesto: m ? m.manifesto : '',
+      modalBg: m ? m.avatarBg : '#0E5A37',
+      modalCanSelect: !!m && view === 'ballot',
+      modalSelect: () => { if (m) this.selectCand(m.posId, m.id); },
+      closeModal: () => this.setState({ modal: null }),
+      stopProp: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+
+      // toast
+      toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
