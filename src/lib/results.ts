@@ -1,6 +1,6 @@
 import { prisma } from "./db";
 import { BAR_PALETTE } from "./theme";
-import { pct } from "./utils";
+import { pct, classifyLevel, type StudentLevel } from "./utils";
 
 /**
  * Winning rule: a candidate must reach this share of ALL eligible voters
@@ -37,6 +37,13 @@ export interface ResultPosition {
   candidates: ResultCandidate[];
 }
 
+export interface LevelStat {
+  level: StudentLevel;
+  eligible: number;
+  voted: number;
+  turnoutPct: number;
+}
+
 export interface ResultsPayload {
   positions: ResultPosition[];
   votesCast: number;
@@ -47,6 +54,8 @@ export interface ResultsPayload {
   thresholdPct: number;
   /** Absolute votes required to win (ceil of thresholdPct% of eligible). */
   thresholdVotes: number;
+  /** Electorate split by programme level (ND / HND), eligible vs voted. */
+  levels: LevelStat[];
 }
 
 function round1(n: number): number {
@@ -59,7 +68,7 @@ function round1(n: number): number {
  * which is more meaningful than counting individual position votes.
  */
 export async function computeResults(): Promise<ResultsPayload> {
-  const [positions, voteGroups, totalEligible, votesCast, flaggedCount] =
+  const [positions, voteGroups, totalEligible, votesCast, flaggedCount, voterLevels] =
     await Promise.all([
       prisma.position.findMany({
         orderBy: { order: "asc" },
@@ -77,7 +86,28 @@ export async function computeResults(): Promise<ResultsPayload> {
       prisma.voter.count(),
       prisma.voter.count({ where: { hasVoted: true } }),
       prisma.flaggedAttempt.count(),
+      prisma.voter.findMany({ select: { matricNumber: true, hasVoted: true } }),
     ]);
+
+  // Electorate split by programme level (ND / HND).
+  const levelAgg: Record<StudentLevel, { eligible: number; voted: number }> = {
+    ND: { eligible: 0, voted: 0 },
+    HND: { eligible: 0, voted: 0 },
+    OTHER: { eligible: 0, voted: 0 },
+  };
+  for (const v of voterLevels) {
+    const lvl = classifyLevel(v.matricNumber);
+    levelAgg[lvl].eligible += 1;
+    if (v.hasVoted) levelAgg[lvl].voted += 1;
+  }
+  const levels: LevelStat[] = (["ND", "HND", "OTHER"] as StudentLevel[])
+    .filter((l) => levelAgg[l].eligible > 0)
+    .map((l) => ({
+      level: l,
+      eligible: levelAgg[l].eligible,
+      voted: levelAgg[l].voted,
+      turnoutPct: pct(levelAgg[l].voted, levelAgg[l].eligible),
+    }));
 
   const tally = new Map<string, number>();
   for (const g of voteGroups) tally.set(g.candidateId, g._count._all);
@@ -133,5 +163,6 @@ export async function computeResults(): Promise<ResultsPayload> {
     flaggedCount,
     thresholdPct: WIN_THRESHOLD_PCT,
     thresholdVotes,
+    levels,
   };
 }

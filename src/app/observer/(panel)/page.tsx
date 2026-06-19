@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { ResultsBars, type ResultPosition } from "@/components/results/ResultsBars";
 import { ResultsAnalysis, type AnalysisData } from "@/components/results/ResultsAnalysis";
+import { LevelBreakdown } from "@/components/results/LevelBreakdown";
 import { useLiveData } from "@/hooks/useLiveData";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -102,6 +103,15 @@ export default function ObserverPage() {
                 <StatCard label="Turnout" value={`${data.turnoutPct}%`} />
                 <StatCard label={`Win line (${data.thresholdPct}%)`} value={`${data.thresholdVotes}`} />
               </div>
+
+              {data.levels?.length > 0 && (
+                <div className="mb-6">
+                  <h2 className="mb-3 font-display text-xl font-bold text-foreground">
+                    Voters by level (ND / HND)
+                  </h2>
+                  <LevelBreakdown levels={data.levels} />
+                </div>
+              )}
 
               <ResultsBars positions={data.positions as unknown as ResultPosition[]} />
 

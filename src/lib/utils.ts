@@ -16,6 +16,20 @@ export function normalizeMatric(raw: string): string {
   return (raw || "").trim().toUpperCase().replace(/\s+/g, "");
 }
 
+export type StudentLevel = "ND" | "HND" | "OTHER";
+
+/**
+ * Classify a matric number by programme level from its prefix.
+ * Handles both slashed (HND/250013) and unslashed (HND250013A) formats.
+ * HND is checked before ND because "HND…" must not match the ND branch.
+ */
+export function classifyLevel(matric: string): StudentLevel {
+  const m = (matric || "").trim().toUpperCase();
+  if (m.startsWith("HND")) return "HND";
+  if (m.startsWith("ND")) return "ND";
+  return "OTHER";
+}
+
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars
 
 function randomToken(len: number): string {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Users, ClipboardList, BarChart3, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardList, BarChart3, Flag, FileSpreadsheet, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,8 @@ const NAV = [
   { href: "/admin/candidates", label: "Candidates", icon: Users },
   { href: "/admin/roster", label: "Voter roster", icon: ClipboardList },
   { href: "/admin/results", label: "Results", icon: BarChart3 },
+  { href: "/admin/flagged", label: "Flagged attempts", icon: Flag },
+  { href: "/admin/master-report", label: "Master report", icon: FileSpreadsheet },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

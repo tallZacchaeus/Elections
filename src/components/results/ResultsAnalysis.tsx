@@ -23,6 +23,12 @@ export interface AnalysisPosition {
   winnerName: string | null;
   candidates: AnalysisCandidate[];
 }
+export interface LevelStat {
+  level: string;
+  eligible: number;
+  voted: number;
+  turnoutPct: number;
+}
 export interface AnalysisData {
   positions: AnalysisPosition[];
   votesCast: number;
@@ -30,6 +36,7 @@ export interface AnalysisData {
   turnoutPct: number;
   thresholdPct: number;
   thresholdVotes: number;
+  levels: LevelStat[];
 }
 
 /**
