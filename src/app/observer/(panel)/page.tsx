@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { ResultsBars, type ResultPosition } from "@/components/results/ResultsBars";
 import { ResultsAnalysis, type AnalysisData } from "@/components/results/ResultsAnalysis";
+import { useLiveData } from "@/hooks/useLiveData";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,14 +15,7 @@ import { Eye, Download, FileDown, LogOut } from "lucide-react";
 
 export default function ObserverPage() {
   const router = useRouter();
-  const [data, setData] = useState<AnalysisData | null>(null);
-
-  useEffect(() => {
-    fetch("/api/results")
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => {});
-  }, []);
+  const data = useLiveData<AnalysisData>("/api/results");
 
   function exportAs(format: "csv" | "xls") {
     window.location.href = `/api/export?format=${format}`;

@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { FileDown } from "lucide-react";
+import { FileDown, Flag } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { PageHeader, StatCard, LivePill } from "@/components/admin/ui";
 import { VotingControl } from "@/components/admin/VotingControl";
 import { ResultsAnalysis, type AnalysisData } from "@/components/results/ResultsAnalysis";
+import { useLiveData } from "@/hooks/useLiveData";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface Overview {
   votesCast: number;
@@ -20,6 +22,14 @@ interface Overview {
   votingOpen: boolean;
   opensAt: string | null;
   closesAt: string | null;
+}
+
+interface FlaggedAttempt {
+  id: string;
+  matricNumber: string;
+  reference: string;
+  reason: string;
+  createdAt: string;
 }
 
 function fmt(dt: string | null): string {
@@ -39,19 +49,31 @@ function fmt(dt: string | null): string {
 }
 
 export default function OverviewPage() {
+  // Overview keeps local state so the voting toggle reflects instantly; it is
+  // also polled so other figures stay live.
   const [data, setData] = useState<Overview | null>(null);
-  const [results, setResults] = useState<AnalysisData | null>(null);
 
-  useEffect(() => {
+  const loadOverview = useCallback(() => {
     fetch("/api/overview")
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => {});
-    fetch("/api/results")
-      .then((r) => r.json())
-      .then(setResults)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setData(d))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    loadOverview();
+    const id = setInterval(loadOverview, 8000);
+    const onVisible = () => document.visibilityState === "visible" && loadOverview();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [loadOverview]);
+
+  const results = useLiveData<AnalysisData>("/api/results");
+  const flaggedData = useLiveData<{ attempts: FlaggedAttempt[] }>("/api/admin/flagged");
+  const flagged = flaggedData?.attempts ?? [];
 
   if (!data) return <p className="text-muted-foreground">Loading overview…</p>;
 
@@ -60,7 +82,15 @@ export default function OverviewPage() {
       <PageHeader
         title="Election overview"
         subtitle="Live status and result analysis."
-        right={<LivePill open={data.votingOpen} />}
+        right={
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="gap-1.5">
+              <span className="live-dot inline-block size-1.5 rounded-full bg-primary" />
+              Live
+            </Badge>
+            <LivePill open={data.votingOpen} />
+          </div>
+        }
       />
       <VotingControl
         votingOpen={data.votingOpen}
@@ -90,6 +120,49 @@ export default function OverviewPage() {
           <span>Positions: {data.positions}</span>
           <span>Candidates: {data.candidates}</span>
         </div>
+      </Card>
+
+      {/* Flagged attempts — matric numbers that tried to vote more than once */}
+      <Card className="mb-6 gap-3 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <Flag className="size-4 text-destructive" />
+            Flagged attempts
+          </h3>
+          <Badge variant={flagged.length ? "default" : "secondary"}>
+            {flagged.length} flagged
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Matric numbers that attempted to vote after already casting a ballot. The first
+          ballot stands; the repeat attempt was blocked.
+        </p>
+        {flagged.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No flagged attempts so far.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="py-2 pr-3 font-medium">Matric number</th>
+                  <th className="py-2 pr-3 font-medium">Reference</th>
+                  <th className="py-2 pr-3 font-medium">Reason</th>
+                  <th className="py-2 font-medium">When</th>
+                </tr>
+              </thead>
+              <tbody>
+                {flagged.map((f) => (
+                  <tr key={f.id} className="border-b border-border/60 last:border-0">
+                    <td className="py-2 pr-3 font-semibold tracking-wide text-foreground">{f.matricNumber}</td>
+                    <td className="py-2 pr-3 font-mono text-xs text-muted-foreground">{f.reference}</td>
+                    <td className="py-2 pr-3 text-muted-foreground">{f.reason}</td>
+                    <td className="py-2 text-muted-foreground">{fmt(f.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Card>
 
       {/* Result analysis (60% of eligible voters win rule) */}

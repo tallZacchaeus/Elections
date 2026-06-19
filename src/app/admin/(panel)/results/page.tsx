@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { PageHeader } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
 import { ResultsBars, type ResultPosition } from "@/components/results/ResultsBars";
+import { useLiveData } from "@/hooks/useLiveData";
 
 interface Results {
   positions: ResultPosition[];
@@ -15,14 +15,7 @@ interface Results {
 }
 
 export default function AdminResultsPage() {
-  const [data, setData] = useState<Results | null>(null);
-
-  useEffect(() => {
-    fetch("/api/results")
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => {});
-  }, []);
+  const data = useLiveData<Results>("/api/results");
 
   function exportAs(format: "csv" | "xls") {
     window.location.href = `/api/export?format=${format}`;
