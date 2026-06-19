@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileDown } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
@@ -46,23 +46,33 @@ export default function OverviewPage() {
   // also polled so other figures stay live.
   const [data, setData] = useState<Overview | null>(null);
 
-  const loadOverview = useCallback(() => {
-    fetch("/api/overview")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d && setData(d))
-      .catch(() => {});
-  }, []);
-
   useEffect(() => {
-    loadOverview();
-    const id = setInterval(loadOverview, 8000);
-    const onVisible = () => document.visibilityState === "visible" && loadOverview();
+    let active = true;
+    let inFlight = false;
+    const load = () => {
+      if (inFlight) return;
+      inFlight = true;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6500);
+      fetch("/api/overview", { signal: controller.signal })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => active && d && setData(d))
+        .catch(() => {})
+        .finally(() => {
+          clearTimeout(timeout);
+          inFlight = false;
+        });
+    };
+    load();
+    const id = setInterval(load, 8000);
+    const onVisible = () => document.visibilityState === "visible" && load();
     document.addEventListener("visibilitychange", onVisible);
     return () => {
+      active = false;
       clearInterval(id);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [loadOverview]);
+  }, []);
 
   const results = useLiveData<AnalysisData>("/api/results");
 
