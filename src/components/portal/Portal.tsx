@@ -1,9 +1,12 @@
 "use client";
 
+import { useLayoutEffect, useRef } from "react";
 import Link from "next/link";
+import gsap from "gsap";
 import { LogoBadge } from "@/components/Logo";
-import { Reveal } from "@/components/Reveal";
-import { BallotCheck, Star, Eye } from "@/components/Icons";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface PortalProps {
   title: string;
@@ -20,221 +23,134 @@ export function Portal({
   institution,
   votingOpen,
 }: PortalProps) {
+  const root = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const ctx = gsap.context(() => {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce) {
+        gsap.set([cardRef.current, "[data-reveal]"], { autoAlpha: 1 });
+        return;
+      }
+
+      // Entrance timeline: card rises in, then its contents stagger up.
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.from(cardRef.current, { autoAlpha: 0, y: 28, scale: 0.96, duration: 0.6 })
+        .from(
+          "[data-reveal]",
+          { autoAlpha: 0, y: 16, duration: 0.5, stagger: 0.08 },
+          "-=0.25",
+        );
+
+      // Gentle continuous float on the logo badge.
+      gsap.to(logoRef.current, {
+        y: -7,
+        duration: 2.4,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+      });
+    }, root);
+    return () => ctx.revert();
+  }, []);
+
+  // Pointer-driven hover lift on the card.
+  function lift(on: boolean) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    gsap.to(cardRef.current, {
+      y: on ? -6 : 0,
+      scale: on ? 1.012 : 1,
+      duration: 0.35,
+      ease: "power2.out",
+    });
+  }
+
   return (
     <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        color: "#F4F1E6",
-        background:
-          "radial-gradient(120% 90% at 80% -10%, #0E5A37 0%, #093821 55%, #06281A 100%)",
-      }}
+      ref={root}
+      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-6 py-14"
     >
+      {/* Soft brand glow backdrop */}
       <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
         style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "56px 24px",
-          textAlign: "center",
+          background:
+            "radial-gradient(60% 50% at 50% 0%, rgba(200,147,42,0.16), transparent 60%), radial-gradient(70% 60% at 50% 110%, rgba(14,90,55,0.18), transparent 60%)",
         }}
-      >
-        <Reveal stagger={0.09} y={18} style={{ width: "100%", maxWidth: 800 }}>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
-            <LogoBadge size={84} />
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              letterSpacing: ".32em",
-              textTransform: "uppercase",
-              color: "#C8932A",
-              fontWeight: 700,
-              marginBottom: 14,
-            }}
-          >
-            Secure Electronic Ballot
-          </div>
-          <h1
-            className="font-serif"
-            style={{
-              fontWeight: 600,
-              fontSize: "clamp(30px, 6vw, 46px)",
-              lineHeight: 1.08,
-              margin: "0 auto 14px",
-              maxWidth: 760,
-            }}
-          >
-            {title}
-          </h1>
-          <p
-            style={{
-              fontSize: 16,
-              lineHeight: 1.6,
-              color: "#BBD3C4",
-              maxWidth: 560,
-              margin: "0 auto 4px",
-            }}
-          >
-            {faculty} · {department}
-          </p>
-          <p style={{ fontSize: 14, color: "#8FB29E", maxWidth: 540, margin: "0 auto 40px" }}>
-            {institution}
-          </p>
-        </Reveal>
-
-        <Reveal
-          stagger={0.1}
-          delay={0.15}
-          y={22}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 240px))",
-            gap: 18,
-            width: "100%",
-            maxWidth: 780,
-            justifyContent: "center",
-          }}
-        >
-          <RoleCard
-            href="/vote"
-            featured
-            iconBg="#0E5A37"
-            icon={<BallotCheck width={20} height={20} stroke="#fff" />}
-            title="Cast your vote"
-            desc="Verify your matriculation number and select your candidates."
-          />
-          <RoleCard
-            href="/admin/login"
-            iconBg="#C8932A"
-            icon={<Star width={20} height={20} stroke="#16241C" />}
-            title="Administrator"
-            desc="Configure elections, candidates and the voter roster."
-          />
-          <RoleCard
-            href="/observer/login"
-            iconBg="rgba(255,255,255,.16)"
-            icon={<Eye width={20} height={20} stroke="#F4F1E6" />}
-            title="Observer"
-            desc="Monitor live results and export official reports."
-          />
-        </Reveal>
-      </div>
+      />
 
       <div
-        style={{
-          display: "flex",
-          gap: 26,
-          justifyContent: "center",
-          flexWrap: "wrap",
-          padding: 20,
-          borderTop: "1px solid rgba(255,255,255,.1)",
-          color: "#8FB29E",
-          fontSize: 12.5,
-        }}
+        className="w-full max-w-lg"
+        onMouseEnter={() => lift(true)}
+        onMouseLeave={() => lift(false)}
       >
-        <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
-          <span
-            className="live-dot"
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: votingOpen ? "#3CB371" : "#9AA89D",
-              display: "inline-block",
-            }}
-          />
-          {votingOpen ? "Voting is open" : "Voting is closed"}
-        </span>
-        <span>One vote per matric number</span>
-        <span>Independently observed</span>
+        <Card ref={cardRef} className="border-secondary/60 text-center">
+          <CardContent className="flex flex-col items-center px-6 py-10 sm:px-10">
+            <div ref={logoRef} data-reveal className="mb-6 flex justify-center">
+              <LogoBadge size={88} />
+            </div>
+
+            <p
+              data-reveal
+              className="mb-3 text-xs font-bold uppercase tracking-[0.32em] text-primary"
+            >
+              Secure Electronic Ballot
+            </p>
+
+            <h1
+              data-reveal
+              className="font-display text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl"
+            >
+              {title}
+            </h1>
+
+            <p data-reveal className="mt-3 text-base text-muted-foreground">
+              {faculty} · {department}
+            </p>
+            <p data-reveal className="mt-1 text-sm text-muted-foreground">
+              {institution}
+            </p>
+
+            <div
+              data-reveal
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-1.5 text-sm font-semibold text-secondary-foreground"
+            >
+              <span
+                className={cn(
+                  "inline-block h-2 w-2 rounded-full",
+                  votingOpen ? "live-dot bg-primary" : "bg-muted-foreground/50",
+                )}
+              />
+              {votingOpen ? "Voting is open" : "Voting is closed"}
+            </div>
+
+            <div data-reveal className="mt-8 w-full">
+              {votingOpen ? (
+                <Button
+                  asChild
+                  size="lg"
+                  className="w-full text-base font-semibold shadow-md shadow-primary/20 sm:w-auto sm:px-10"
+                >
+                  <Link href="/vote">Cast your vote</Link>
+                </Button>
+              ) : (
+                <Button size="lg" className="w-full sm:w-auto sm:px-10" disabled>
+                  Voting is closed
+                </Button>
+              )}
+            </div>
+
+            <p data-reveal className="mt-6 text-xs text-muted-foreground">
+              One vote per matric number
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
-  );
-}
-
-function RoleCard({
-  href,
-  icon,
-  iconBg,
-  title,
-  desc,
-  featured = false,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  iconBg: string;
-  title: string;
-  desc: string;
-  featured?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className="focus-ring"
-      style={{
-        textDecoration: "none",
-        background: featured ? "#F4F1E6" : "rgba(255,255,255,.07)",
-        border: featured ? "none" : "1px solid rgba(255,255,255,.18)",
-        borderRadius: 14,
-        padding: "24px 22px",
-        textAlign: "left",
-        boxShadow: featured ? "0 8px 24px rgba(0,0,0,.22)" : "none",
-        transition: "transform .18s ease, box-shadow .18s ease, background .18s ease",
-        display: "block",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-4px)";
-        e.currentTarget.style.boxShadow = featured
-          ? "0 16px 36px rgba(0,0,0,.3)"
-          : "0 12px 28px rgba(0,0,0,.2)";
-        if (!featured) e.currentTarget.style.background = "rgba(255,255,255,.12)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = featured
-          ? "0 8px 24px rgba(0,0,0,.22)"
-          : "none";
-        if (!featured) e.currentTarget.style.background = "rgba(255,255,255,.07)";
-      }}
-    >
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 10,
-          background: iconBg,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 16,
-        }}
-      >
-        {icon}
-      </div>
-      <div
-        className="font-serif"
-        style={{
-          fontSize: 21,
-          fontWeight: 600,
-          color: featured ? "#16241C" : "#F4F1E6",
-          marginBottom: 6,
-        }}
-      >
-        {title}
-      </div>
-      <div
-        style={{
-          fontSize: 13.5,
-          lineHeight: 1.5,
-          color: featured ? "#5C6B61" : "#A9C4B5",
-        }}
-      >
-        {desc}
-      </div>
-    </Link>
   );
 }

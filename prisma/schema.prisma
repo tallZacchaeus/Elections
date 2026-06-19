@@ -45,6 +45,7 @@ model Candidate {
   position   Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
   positionId String
   name       String
+  nickname   String   @default("")
   level      String   @default("Public Admin")
   avatarBg   String   @default("#0E5A37")
   manifesto  String   @default("")

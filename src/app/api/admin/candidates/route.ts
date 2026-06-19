@@ -13,6 +13,7 @@ export async function GET() {
     select: {
       id: true,
       name: true,
+      nickname: true,
       level: true,
       avatarBg: true,
       manifesto: true,
@@ -26,6 +27,7 @@ export async function GET() {
     candidates: candidates.map((c) => ({
       id: c.id,
       name: c.name,
+      nickname: c.nickname,
       level: c.level,
       avatarBg: c.avatarBg,
       manifesto: c.manifesto,
@@ -60,6 +62,7 @@ export async function POST(req: Request) {
     data: {
       positionId,
       name,
+      nickname: (body.nickname ?? "").trim(),
       level: (body.level ?? "Public Admin").trim() || "Public Admin",
       manifesto: (body.manifesto ?? "Manifesto pending submission to the electoral committee.").trim(),
       avatarBg: pickAvatarBg(count + name.length),

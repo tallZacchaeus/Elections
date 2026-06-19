@@ -3,8 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { useToast, Toast } from "@/components/Toast";
-import { PageHeader, btnGhost } from "@/components/admin/ui";
-import { Upload, FileText } from "@/components/Icons";
+import { PageHeader } from "@/components/admin/ui";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Upload, FileText } from "lucide-react";
 
 interface Voter {
   matricNumber: string;
@@ -78,66 +89,78 @@ export default function RosterPage() {
       <PageHeader
         title="Voter roster"
         subtitle="Upload the eligibility dataset. Only matriculation numbers on this list may vote."
-        right={<button onClick={downloadTemplate} style={btnGhost()}>Download CSV template</button>}
+        right={
+          <Button variant="outline" size="sm" onClick={downloadTemplate}>
+            Download CSV template
+          </Button>
+        }
       />
 
-      <input ref={fileRef} type="file" accept=".csv,text/csv,.xlsx" onChange={onFile} style={{ display: "none" }} />
+      <input ref={fileRef} type="file" accept=".csv,text/csv,.xlsx" onChange={onFile} className="hidden" />
 
       <div
         onClick={() => !uploading && fileRef.current?.click()}
         role="button"
         tabIndex={0}
-        style={{ background: "#fff", border: "2px dashed #C9C3B0", borderRadius: 15, padding: "40px 24px", textAlign: "center", cursor: uploading ? "wait" : "pointer", marginBottom: 22 }}
+        className={`mb-6 rounded-xl border-2 border-dashed border-border bg-card px-6 py-10 text-center transition-colors hover:bg-muted/40 ${uploading ? "cursor-wait" : "cursor-pointer"}`}
       >
-        <div style={{ width: 54, height: 54, borderRadius: 12, background: "#E2F0E7", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
-          <Upload width={26} height={26} stroke="#0E5A37" />
+        <div className="mb-3.5 inline-flex size-14 items-center justify-center rounded-xl bg-muted">
+          <Upload className="size-6 text-foreground" />
         </div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#16241C", marginBottom: 6 }}>
+        <div className="mb-1.5 text-base font-semibold text-foreground">
           {uploading ? "Uploading…" : "Drop your CSV file here, or click to browse"}
         </div>
-        <div style={{ fontSize: 13, color: "#7A887E" }}>
+        <div className="text-sm text-muted-foreground">
           accepts .csv · columns: <code>matric_number</code>, <code>full_name</code> · uploading replaces the current roster
         </div>
       </div>
 
       {loading ? (
-        <p style={{ color: "#5C6B61" }}>Loading roster…</p>
+        <p className="text-muted-foreground">Loading roster…</p>
       ) : total === 0 ? (
-        <p style={{ color: "#8A968C" }}>No voters loaded yet. Upload a roster to begin.</p>
+        <p className="text-muted-foreground">No voters loaded yet. Upload a roster to begin.</p>
       ) : (
-        <div style={{ background: "#fff", border: "1px solid #E4E0D4", borderRadius: 14, overflow: "hidden" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "1px solid #EFEBDE", background: "#F7F5EC", gap: 10, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <FileText width={20} height={20} stroke="#0E5A37" />
+        <Card className="gap-0 overflow-hidden p-0">
+          <div className="flex flex-wrap items-center justify-between gap-2.5 border-b bg-muted/40 px-5 py-4">
+            <div className="flex items-center gap-2.5">
+              <FileText className="size-5 text-foreground" />
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>Current roster</div>
-                <div style={{ fontSize: 12, color: "#8A968C" }}>{total} eligible voters · {votedCount} have voted</div>
+                <div className="text-sm font-semibold text-foreground">Current roster</div>
+                <div className="text-xs text-muted-foreground">{total} eligible voters · {votedCount} have voted</div>
               </div>
             </div>
-            <button onClick={() => fileRef.current?.click()} style={btnGhost()}>Replace file</button>
+            <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+              Replace file
+            </Button>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1.6fr .8fr", padding: "11px 20px", background: "#FBFAF3", borderBottom: "1px solid #EFEBDE", fontSize: 11.5, letterSpacing: ".05em", textTransform: "uppercase", color: "#8A968C", fontWeight: 700 }}>
-            <span>Matric number</span>
-            <span>Full name</span>
-            <span>Status</span>
-          </div>
-          {shown.map((v) => (
-            <div key={v.matricNumber} style={{ display: "grid", gridTemplateColumns: "1.2fr 1.6fr .8fr", padding: "12px 20px", borderBottom: "1px solid #F2EEE2", fontSize: 13.5, alignItems: "center" }}>
-              <span style={{ fontWeight: 600, letterSpacing: ".02em" }}>{v.matricNumber}</span>
-              <span style={{ color: "#46554C" }}>{v.fullName}</span>
-              <span>
-                <span style={{ fontSize: 11.5, fontWeight: 700, padding: "3px 9px", borderRadius: 99, background: v.hasVoted ? "#E2F0E7" : "#F2EFE4", color: v.hasVoted ? "#0E5A37" : "#8A968C" }}>
-                  {v.hasVoted ? "Voted" : "Not voted"}
-                </span>
-              </span>
-            </div>
-          ))}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Matric number</TableHead>
+                <TableHead>Full name</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {shown.map((v) => (
+                <TableRow key={v.matricNumber}>
+                  <TableCell className="font-semibold tracking-wide">{v.matricNumber}</TableCell>
+                  <TableCell className="text-muted-foreground">{v.fullName}</TableCell>
+                  <TableCell>
+                    <Badge variant={v.hasVoted ? "default" : "secondary"}>
+                      {v.hasVoted ? "Voted" : "Not voted"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
           {total > shown.length && (
-            <div style={{ padding: "12px 20px", fontSize: 12, color: "#8A968C", textAlign: "center" }}>
+            <div className="px-5 py-3 text-center text-xs text-muted-foreground">
               Showing first {shown.length} of {total} records
             </div>
           )}
-        </div>
+        </Card>
       )}
       <Toast message={toast} />
     </Reveal>

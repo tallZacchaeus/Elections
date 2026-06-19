@@ -4,9 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
-import { StatCard, btnGhost } from "@/components/admin/ui";
 import { ResultsBars, type ResultPosition } from "@/components/results/ResultsBars";
-import { Eye, Download, LogOut } from "@/components/Icons";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Eye, Download, LogOut } from "lucide-react";
 
 interface Results {
   positions: ResultPosition[];
@@ -37,55 +41,118 @@ export default function ObserverPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F2F0E6" }}>
-      <div className="no-print" style={{ background: "#0A3D26", color: "#F4F1E6", padding: "16px 30px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-        <div style={{ width: 36, height: 36, borderRadius: 8, background: "#0E5A37", border: "1px solid #C8932A", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
-          <Eye width={20} height={20} stroke="#F4F1E6" />
+    <div className="min-h-screen bg-background">
+      <div className="no-print flex flex-wrap items-center gap-3.5 bg-foreground px-[30px] py-4 text-background">
+        <div className="flex size-9 flex-none items-center justify-center rounded-lg bg-background/10">
+          <Eye className="size-5" />
         </div>
-        <div style={{ lineHeight: 1.25 }}>
-          <div style={{ fontSize: 15, fontWeight: 700 }}>Observer Portal</div>
-          <div style={{ fontSize: 11.5, color: "#9FBFAE" }}>Read-only access · accredited monitor</div>
+        <div className="leading-tight">
+          <div className="text-[15px] font-bold">Observer Portal</div>
+          <div className="text-xs opacity-70">
+            Read-only access · accredited monitor
+          </div>
         </div>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(45,160,90,.16)", color: "#9FE3B6", padding: "7px 13px", borderRadius: 999, fontSize: 12.5, fontWeight: 700 }}>
-            <span className="live-dot" style={{ width: 8, height: 8, borderRadius: "50%", background: "#2DA05A" }} />
+        <div className="ml-auto flex items-center gap-3">
+          <Badge
+            variant="secondary"
+            className="gap-2 bg-background/15 text-background"
+          >
+            <span className="live-dot inline-block size-2 rounded-full bg-background" />
             Live
-          </span>
-          <button onClick={logout} style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.18)", color: "#F4F1E6", borderRadius: 9, padding: "7px 13px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
-            <LogOut width={14} height={14} /> Sign out
-          </button>
+          </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={logout}
+            className="border-background/20 bg-background/10 text-background hover:bg-background/20 hover:text-background"
+          >
+            <LogOut className="size-3.5" /> Sign out
+          </Button>
         </div>
       </div>
 
-      <Reveal style={{ maxWidth: 920, margin: "0 auto", padding: "30px 24px 60px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 20, flexWrap: "wrap", gap: 14 }}>
-          <div>
-            <h1 className="font-serif" style={{ fontWeight: 600, fontSize: 26, margin: "0 0 4px" }}>Results monitor</h1>
-            <p style={{ fontSize: 13.5, color: "#5C6B61", margin: 0 }}>You may view and export results. Editing is disabled for observers.</p>
-          </div>
-          <div className="no-print" style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => exportAs("csv")} style={{ ...btnGhost(), display: "flex", alignItems: "center", gap: 7 }}><Download width={15} height={15} /> CSV</button>
-            <button onClick={() => exportAs("xls")} style={{ ...btnGhost(), display: "flex", alignItems: "center", gap: 7 }}><Download width={15} height={15} /> Excel</button>
-            <button onClick={() => window.print()} style={{ ...btnGhost({ background: "#0E5A37", color: "#fff", border: "none" }), display: "flex", alignItems: "center", gap: 7 }}><Download width={15} height={15} /> PDF</button>
-          </div>
-        </div>
-
-        {!data ? (
-          <p style={{ color: "#5C6B61" }}>Loading results…</p>
-        ) : (
-          <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginBottom: 22 }}>
-              <StatCard label="Votes cast" value={data.votesCast} color="#0E5A37" />
-              <StatCard label="Turnout" value={`${data.turnoutPct}%`} />
-              <StatCard label="Flagged attempts" value={data.flaggedCount} color="#B0651F" />
+      <Reveal style={{ maxWidth: 920, margin: "0 auto" }}>
+        <div className="px-6 pt-[30px] pb-[60px]">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3.5">
+            <div>
+              <h1 className="font-serif mb-1 text-[26px] font-semibold text-foreground">
+                Results monitor
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                You may view and export results. Editing is disabled for
+                observers.
+              </p>
             </div>
-            <ResultsBars positions={data.positions} />
-          </>
-        )}
-        <Link href="/" className="no-print" style={{ display: "inline-block", marginTop: 24, color: "#5C6B61", fontSize: 13, textDecoration: "underline", textUnderlineOffset: 3 }}>
-          Return to home
-        </Link>
+            <div className="no-print flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => exportAs("csv")}>
+                <Download className="size-3.5" /> CSV
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => exportAs("xls")}>
+                <Download className="size-3.5" /> Excel
+              </Button>
+              <Button size="sm" onClick={() => window.print()}>
+                <Download className="size-3.5" /> PDF
+              </Button>
+            </div>
+          </div>
+
+          {!data ? (
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3.5">
+                <Skeleton className="h-20" />
+                <Skeleton className="h-20" />
+                <Skeleton className="h-20" />
+              </div>
+              <Skeleton className="h-40" />
+            </div>
+          ) : (
+            <Reveal stagger={0.07} y={16}>
+              <div className="mb-[22px] grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3.5">
+                <StatCard label="Votes cast" value={data.votesCast} />
+                <StatCard label="Turnout" value={`${data.turnoutPct}%`} />
+                <StatCard
+                  label="Flagged attempts"
+                  value={data.flaggedCount}
+                  muted={data.flaggedCount > 0}
+                />
+              </div>
+              <ResultsBars positions={data.positions} />
+            </Reveal>
+          )}
+          <Link
+            href="/"
+            className="no-print mt-6 inline-block text-sm text-muted-foreground underline underline-offset-[3px]"
+          >
+            Return to home
+          </Link>
+        </div>
       </Reveal>
     </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  muted,
+}: {
+  label: string;
+  value: number | string;
+  muted?: boolean;
+}) {
+  return (
+    <Card>
+      <CardContent>
+        <div
+          className={cn(
+            "font-serif text-3xl font-semibold",
+            muted ? "text-muted-foreground" : "text-foreground",
+          )}
+        >
+          {value}
+        </div>
+        <div className="mt-0.5 text-sm text-muted-foreground">{label}</div>
+      </CardContent>
+    </Card>
   );
 }

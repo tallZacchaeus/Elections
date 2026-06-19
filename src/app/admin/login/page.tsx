@@ -9,16 +9,18 @@ export default async function AdminLoginPage() {
   if (session?.role === "ADMIN") redirect("/admin");
 
   return (
-    <LoginForm
-      portal="admin"
-      title="Admin Console"
-      subtitle="Sign in to manage the PASA Election."
-      redirectTo="/admin"
-      hint={
-        process.env.NODE_ENV !== "production"
-          ? "Demo: admin@oyscatech.edu.ng / ChangeMe!Admin2026"
-          : undefined
-      }
-    />
+    <div className="flex min-h-screen items-center justify-center bg-background px-6 py-10">
+      <LoginForm
+        portal="admin"
+        title="Admin Console"
+        subtitle="Sign in to manage the PASA Election."
+        redirectTo="/admin"
+        hint={
+          process.env.NODE_ENV !== "production"
+            ? "Demo: admin@oyscatech.edu.ng / ChangeMe!Admin2026"
+            : undefined
+        }
+      />
+    </div>
   );
 }
