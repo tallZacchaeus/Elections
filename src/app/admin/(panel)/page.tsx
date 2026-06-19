@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { FileDown, Flag } from "lucide-react";
+import { FileDown, Flag, Download } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { PageHeader, StatCard, LivePill } from "@/components/admin/ui";
 import { VotingControl } from "@/components/admin/VotingControl";
@@ -73,7 +73,40 @@ export default function OverviewPage() {
 
   const results = useLiveData<AnalysisData>("/api/results");
   const flaggedData = useLiveData<{ attempts: FlaggedAttempt[] }>("/api/admin/flagged");
-  const flagged = flaggedData?.attempts ?? [];
+  const flagged = useMemo(() => flaggedData?.attempts ?? [], [flaggedData]);
+
+  // Aggregate by matric number: how many times each tried to vote again.
+  const flaggedByMatric = useMemo(() => {
+    const map = new Map<string, { matricNumber: string; attempts: number; lastAt: string }>();
+    for (const f of flagged) {
+      const cur = map.get(f.matricNumber);
+      if (cur) {
+        cur.attempts += 1;
+        if (f.createdAt > cur.lastAt) cur.lastAt = f.createdAt;
+      } else {
+        map.set(f.matricNumber, { matricNumber: f.matricNumber, attempts: 1, lastAt: f.createdAt });
+      }
+    }
+    return [...map.values()].sort(
+      (a, b) => b.attempts - a.attempts || a.matricNumber.localeCompare(b.matricNumber),
+    );
+  }, [flagged]);
+
+  function exportFlaggedCsv() {
+    const header = ["Matric number", "Repeat attempts", "Last attempt"];
+    const esc = (s: string) => (/[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
+    const lines = [header.map(esc).join(",")];
+    for (const r of flaggedByMatric) {
+      lines.push([r.matricNumber, String(r.attempts), fmt(r.lastAt)].map(esc).join(","));
+    }
+    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `flagged-attempts-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   if (!data) return <p className="text-muted-foreground">Loading overview…</p>;
 
@@ -129,34 +162,43 @@ export default function OverviewPage() {
             <Flag className="size-4 text-destructive" />
             Flagged attempts
           </h3>
-          <Badge variant={flagged.length ? "default" : "secondary"}>
-            {flagged.length} flagged
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={flagged.length ? "default" : "secondary"}>
+              {flaggedByMatric.length} matric{flaggedByMatric.length === 1 ? "" : "s"} · {flagged.length} attempt{flagged.length === 1 ? "" : "s"}
+            </Badge>
+            {flaggedByMatric.length > 0 && (
+              <Button size="sm" variant="outline" className="gap-2" onClick={exportFlaggedCsv}>
+                <Download className="size-3.5" /> Export CSV
+              </Button>
+            )}
+          </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Matric numbers that attempted to vote after already casting a ballot. The first
-          ballot stands; the repeat attempt was blocked.
+          Matric numbers that attempted to vote after already casting a ballot, and how many times
+          each tried. The first ballot stands; every repeat attempt is blocked.
         </p>
-        {flagged.length === 0 ? (
+        {flaggedByMatric.length === 0 ? (
           <p className="text-sm text-muted-foreground">No flagged attempts so far.</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="max-h-[420px] overflow-auto">
             <table className="w-full border-collapse text-sm">
-              <thead>
+              <thead className="sticky top-0 bg-card">
                 <tr className="border-b text-left text-muted-foreground">
                   <th className="py-2 pr-3 font-medium">Matric number</th>
-                  <th className="py-2 pr-3 font-medium">Reference</th>
-                  <th className="py-2 pr-3 font-medium">Reason</th>
-                  <th className="py-2 font-medium">When</th>
+                  <th className="py-2 pr-3 font-medium">Repeat attempts</th>
+                  <th className="py-2 font-medium">Last attempt</th>
                 </tr>
               </thead>
               <tbody>
-                {flagged.map((f) => (
-                  <tr key={f.id} className="border-b border-border/60 last:border-0">
-                    <td className="py-2 pr-3 font-semibold tracking-wide text-foreground">{f.matricNumber}</td>
-                    <td className="py-2 pr-3 font-mono text-xs text-muted-foreground">{f.reference}</td>
-                    <td className="py-2 pr-3 text-muted-foreground">{f.reason}</td>
-                    <td className="py-2 text-muted-foreground">{fmt(f.createdAt)}</td>
+                {flaggedByMatric.map((r) => (
+                  <tr key={r.matricNumber} className="border-b border-border/60 last:border-0">
+                    <td className="py-2 pr-3 font-semibold tracking-wide text-foreground">{r.matricNumber}</td>
+                    <td className="py-2 pr-3">
+                      <Badge variant={r.attempts > 1 ? "default" : "secondary"}>
+                        {r.attempts}&times;
+                      </Badge>
+                    </td>
+                    <td className="py-2 text-muted-foreground">{fmt(r.lastAt)}</td>
                   </tr>
                 ))}
               </tbody>

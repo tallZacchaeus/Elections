@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { useToast, Toast } from "@/components/Toast";
 import { PageHeader } from "@/components/admin/ui";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -15,12 +16,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Upload, FileText } from "lucide-react";
+import { Upload, FileText, Download, Search } from "lucide-react";
 
 interface Voter {
   matricNumber: string;
   fullName: string;
   hasVoted: boolean;
+  votedAt: string | null;
+}
+
+type Filter = "all" | "voted" | "not";
+
+function fmt(dt: string | null): string {
+  if (!dt) return "";
+  try {
+    return new Date(dt).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch {
+    return "";
+  }
+}
+
+function csvCell(value: string): string {
+  return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
 }
 
 export default function RosterPage() {
@@ -30,6 +54,8 @@ export default function RosterPage() {
   const [votedCount, setVotedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [query, setQuery] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
@@ -73,22 +99,56 @@ export default function RosterPage() {
 
   function downloadTemplate() {
     const csv = "matric_number,full_name\nPUB/22/014,Chinedu Okeke\nPUB/22/027,Fatima Bello\n";
-    const blob = new Blob([csv], { type: "text/csv" });
+    triggerDownload(csv, "roster_template.csv");
+  }
+
+  function triggerDownload(csv: string, filename: string) {
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "roster_template.csv";
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
   }
 
-  const shown = voters.slice(0, 12);
+  const notVotedCount = total - votedCount;
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return voters.filter((v) => {
+      if (filter === "voted" && !v.hasVoted) return false;
+      if (filter === "not" && v.hasVoted) return false;
+      if (q && !v.matricNumber.toLowerCase().includes(q) && !v.fullName.toLowerCase().includes(q))
+        return false;
+      return true;
+    });
+  }, [voters, filter, query]);
+
+  function exportCsv() {
+    const label = filter === "voted" ? "voted" : filter === "not" ? "not-voted" : "all";
+    const header = ["Matric number", "Full name", "Status", "Voted at"];
+    const lines = [header.map(csvCell).join(",")];
+    for (const v of filtered) {
+      lines.push(
+        [
+          v.matricNumber,
+          v.fullName,
+          v.hasVoted ? "Voted" : "Not voted",
+          v.hasVoted ? fmt(v.votedAt) : "",
+        ]
+          .map((s) => csvCell(String(s)))
+          .join(","),
+      );
+    }
+    triggerDownload(lines.join("\n"), `roster-${label}-${Date.now()}.csv`);
+  }
 
   return (
     <Reveal>
       <PageHeader
         title="Voter roster"
-        subtitle="Upload the eligibility dataset. Only matriculation numbers on this list may vote."
+        subtitle="The full eligibility list and who has voted. Ballot choices are never recorded against a voter."
         right={
           <Button variant="outline" size="sm" onClick={downloadTemplate}>
             Download CSV template
@@ -102,15 +162,15 @@ export default function RosterPage() {
         onClick={() => !uploading && fileRef.current?.click()}
         role="button"
         tabIndex={0}
-        className={`mb-6 rounded-xl border-2 border-dashed border-border bg-card px-6 py-10 text-center transition-colors hover:bg-muted/40 ${uploading ? "cursor-wait" : "cursor-pointer"}`}
+        className={`mb-6 rounded-xl border-2 border-dashed border-border bg-card px-6 py-8 text-center transition-colors hover:bg-muted/40 ${uploading ? "cursor-wait" : "cursor-pointer"}`}
       >
-        <div className="mb-3.5 inline-flex size-14 items-center justify-center rounded-xl bg-muted">
-          <Upload className="size-6 text-foreground" />
+        <div className="mb-3 inline-flex size-12 items-center justify-center rounded-xl bg-muted">
+          <Upload className="size-5 text-foreground" />
         </div>
-        <div className="mb-1.5 text-base font-semibold text-foreground">
+        <div className="mb-1 text-sm font-semibold text-foreground">
           {uploading ? "Uploading…" : "Drop your CSV file here, or click to browse"}
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-xs text-muted-foreground">
           accepts .csv · columns: <code>matric_number</code>, <code>full_name</code> · uploading replaces the current roster
         </div>
       </div>
@@ -121,48 +181,105 @@ export default function RosterPage() {
         <p className="text-muted-foreground">No voters loaded yet. Upload a roster to begin.</p>
       ) : (
         <Card className="gap-0 overflow-hidden p-0">
-          <div className="flex flex-wrap items-center justify-between gap-2.5 border-b bg-muted/40 px-5 py-4">
+          {/* Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/40 px-5 py-4">
             <div className="flex items-center gap-2.5">
               <FileText className="size-5 text-foreground" />
               <div>
                 <div className="text-sm font-semibold text-foreground">Current roster</div>
-                <div className="text-xs text-muted-foreground">{total} eligible voters · {votedCount} have voted</div>
+                <div className="text-xs text-muted-foreground">
+                  {total} eligible · {votedCount} voted · {notVotedCount} not voted
+                </div>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-              Replace file
+            <Button size="sm" onClick={exportCsv} className="gap-2">
+              <Download className="size-3.5" />
+              Export {filter === "voted" ? "voted" : filter === "not" ? "not-voted" : "all"} ({filtered.length})
             </Button>
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Matric number</TableHead>
-                <TableHead>Full name</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {shown.map((v) => (
-                <TableRow key={v.matricNumber}>
-                  <TableCell className="font-semibold tracking-wide">{v.matricNumber}</TableCell>
-                  <TableCell className="text-muted-foreground">{v.fullName}</TableCell>
-                  <TableCell>
-                    <Badge variant={v.hasVoted ? "default" : "secondary"}>
-                      {v.hasVoted ? "Voted" : "Not voted"}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          {total > shown.length && (
-            <div className="px-5 py-3 text-center text-xs text-muted-foreground">
-              Showing first {shown.length} of {total} records
+
+          {/* Filters */}
+          <div className="flex flex-wrap items-center gap-2 border-b px-5 py-3">
+            <div className="flex gap-1">
+              <FilterButton active={filter === "all"} onClick={() => setFilter("all")}>
+                All ({total})
+              </FilterButton>
+              <FilterButton active={filter === "voted"} onClick={() => setFilter("voted")}>
+                Voted ({votedCount})
+              </FilterButton>
+              <FilterButton active={filter === "not"} onClick={() => setFilter("not")}>
+                Not voted ({notVotedCount})
+              </FilterButton>
             </div>
-          )}
+            <div className="relative ml-auto w-full max-w-xs">
+              <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search matric or name…"
+                className="h-9 pl-8"
+              />
+            </div>
+          </div>
+
+          {/* List */}
+          <div className="max-h-[560px] overflow-auto">
+            <Table>
+              <TableHeader className="sticky top-0 bg-card">
+                <TableRow>
+                  <TableHead>Matric number</TableHead>
+                  <TableHead>Full name</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Voted at</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((v) => (
+                  <TableRow key={v.matricNumber}>
+                    <TableCell className="font-semibold tracking-wide">{v.matricNumber}</TableCell>
+                    <TableCell className="text-muted-foreground">{v.fullName}</TableCell>
+                    <TableCell>
+                      <Badge variant={v.hasVoted ? "default" : "secondary"}>
+                        {v.hasVoted ? "Voted" : "Not voted"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {v.hasVoted ? fmt(v.votedAt) : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filtered.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
+                      No voters match this filter.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="border-t px-5 py-2.5 text-center text-xs text-muted-foreground">
+            Showing {filtered.length} of {total} voters
+          </div>
         </Card>
       )}
       <Toast message={toast} />
     </Reveal>
+  );
+}
+
+function FilterButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Button variant={active ? "default" : "outline"} size="sm" onClick={onClick}>
+      {children}
+    </Button>
   );
 }
