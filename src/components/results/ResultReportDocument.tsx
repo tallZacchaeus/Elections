@@ -96,7 +96,7 @@ export function ResultReportDocument({ backHref }: { backHref: string }) {
       </div>
 
       {/* The printable document */}
-      <div className="report-sheet mx-auto max-w-[820px] rounded-lg border border-border bg-white p-10 text-[#1a1a1a] shadow-sm">
+      <div className="report-sheet mx-auto max-w-[820px] rounded-lg border border-border bg-white p-5 text-[#1a1a1a] shadow-sm sm:p-10">
         {/* Header */}
         <header className="border-b-2 border-[#0e5a37] pb-5 text-center">
           <h1 className="text-lg font-extrabold uppercase tracking-wide text-[#0e5a37]">
@@ -137,7 +137,8 @@ export function ResultReportDocument({ backHref }: { backHref: string }) {
                 {p.total} votes cast · win line {p.thresholdVotes}
               </span>
             </div>
-            <table className="w-full border-collapse text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[480px] border-collapse text-sm">
               <thead>
                 <tr className="bg-[#0e5a37] text-left text-white">
                   <th className="border border-[#0e5a37] px-2 py-1.5 font-semibold">Candidate</th>
@@ -165,6 +166,7 @@ export function ResultReportDocument({ backHref }: { backHref: string }) {
                   ))}
               </tbody>
             </table>
+            </div>
           </section>
         ))}
 
@@ -193,7 +195,7 @@ export function ResultReportDocument({ backHref }: { backHref: string }) {
         </section>
 
         {/* Signatures */}
-        <section className="mt-12 grid grid-cols-2 gap-10 break-inside-avoid">
+        <section className="mt-12 grid grid-cols-1 gap-8 break-inside-avoid sm:grid-cols-2 sm:gap-10">
           <SignatureBlock role="Chairman, Electoral Committee" />
           <SignatureBlock role="Secretary, Electoral Committee" />
         </section>
