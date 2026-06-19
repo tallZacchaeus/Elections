@@ -23,6 +23,7 @@ import { X } from "lucide-react";
 interface Candidate {
   id: string;
   name: string;
+  nickname: string;
   level: string;
   avatarBg: string;
   manifesto: string;
@@ -41,6 +42,7 @@ export default function CandidatesPage() {
 
   const [posId, setPosId] = useState("");
   const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("");
   const [level, setLevel] = useState("");
   const [manifesto, setManifesto] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -88,7 +90,7 @@ export default function CandidatesPage() {
     const res = await fetch("/api/admin/candidates", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ positionId: posId, name, level, manifesto }),
+      body: JSON.stringify({ positionId: posId, name, nickname, level, manifesto }),
     });
     if (res.ok) {
       const created = await res.json();
@@ -96,6 +98,7 @@ export default function CandidatesPage() {
         await uploadPhoto(created.candidate.id, photoFile);
       }
       setName("");
+      setNickname("");
       setManifesto("");
       setLevel("");
       setPhotoFile(null);
@@ -166,6 +169,10 @@ export default function CandidatesPage() {
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
         </div>
         <div>
+          <Label className="mb-1.5">Nickname (optional)</Label>
+          <Input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="e.g. The Bridge" />
+        </div>
+        <div>
           <Label className="mb-1.5">Level / standing (optional)</Label>
           <Input value={level} onChange={(e) => setLevel(e.target.value)} placeholder="e.g. HND II · Public Admin" />
         </div>
@@ -227,7 +234,12 @@ export default function CandidatesPage() {
                 >
                   <Avatar name={c.name} size={34} bg={c.avatarBg} photoUrl={c.photoUrl} fontSize={13} />
                   <div className="leading-tight">
-                    <div className="text-[13.5px] font-semibold text-foreground">{c.name}</div>
+                    <div className="text-[13.5px] font-semibold text-foreground">
+                      {c.name}
+                      {c.nickname && (
+                        <span className="ml-1 font-normal text-muted-foreground">“{c.nickname}”</span>
+                      )}
+                    </div>
                     <div className="text-[11px] text-muted-foreground">{c.level}</div>
                   </div>
                   <div className="ml-1 flex items-center gap-1">

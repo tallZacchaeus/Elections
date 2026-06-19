@@ -26,18 +26,18 @@ export function AdminSidebar({ name, title }: { name: string; title: string }) {
   }
 
   return (
-    <aside className="no-print sticky top-0 flex min-h-screen w-56 flex-none flex-col bg-card p-3.5">
-      <div className="mb-3.5 flex items-center gap-2.5 border-b px-2 pb-4">
-        <div className="flex size-9 flex-none items-center justify-center rounded-md bg-primary text-primary-foreground">
+    <aside className="no-print sticky top-0 m-3 flex min-h-[calc(100vh-1.5rem)] w-60 flex-none flex-col rounded-xl bg-sidebar p-4 text-sidebar-foreground shadow-[0_10px_30px_-20px_rgba(16,40,30,0.6)]">
+      <div className="mb-4 flex items-center gap-2.5 border-b border-sidebar-border px-2 pb-4">
+        <div className="flex size-9 flex-none items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
           <LayoutDashboard className="size-4.5" />
         </div>
         <div className="leading-tight">
-          <div className="text-[13px] font-semibold text-foreground">Admin Console</div>
-          <div className="truncate text-[10.5px] text-muted-foreground">{title}</div>
+          <div className="font-display text-sm font-bold text-sidebar-foreground">Admin Console</div>
+          <div className="truncate text-[10.5px] text-sidebar-foreground/60">{title}</div>
         </div>
       </div>
 
-      <nav className="flex flex-col gap-0.5">
+      <nav className="flex flex-col gap-1">
         {NAV.map((item) => {
           const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
           const Icon = item.icon;
@@ -46,10 +46,10 @@ export function AdminSidebar({ name, title }: { name: string; title: string }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors",
+                "flex items-center gap-2.5 rounded-md px-3 py-2.5 text-[13.5px] font-semibold transition-colors",
                 active
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
               )}
             >
               <Icon className="size-4" />
@@ -60,13 +60,17 @@ export function AdminSidebar({ name, title }: { name: string; title: string }) {
       </nav>
 
       <div className="mt-auto pt-4">
-        <Separator className="mb-3" />
-        <div className="px-2 pb-3 text-[11px] leading-relaxed text-muted-foreground">
+        <Separator className="mb-3 bg-sidebar-border" />
+        <div className="px-2 pb-3 text-[11px] leading-relaxed text-sidebar-foreground/60">
           Signed in as
           <br />
-          <strong className="font-semibold text-foreground">{name}</strong>
+          <strong className="font-semibold text-sidebar-foreground">{name}</strong>
         </div>
-        <Button variant="outline" className="w-full justify-start gap-2" onClick={logout}>
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          onClick={logout}
+        >
           <LogOut className="size-4" />
           Sign out
         </Button>

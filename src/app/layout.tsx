@@ -1,20 +1,11 @@
 import type { Metadata } from "next";
-import { Spectral, Public_Sans, Geist } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const spectral = Spectral({
-  variable: "--font-spectral",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
-
-const publicSans = Public_Sans({
-  variable: "--font-public-sans",
+// Modern geometric, subtly rounded typeface used across the app.
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
@@ -30,10 +21,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body className={`${spectral.variable} ${publicSans.variable}`}>
-        {children}
-      </body>
+    <html lang="en" className={cn("font-sans", jakarta.variable)}>
+      <body>{children}</body>
     </html>
   );
 }

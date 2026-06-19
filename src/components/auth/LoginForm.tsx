@@ -16,6 +16,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Reveal } from "@/components/Reveal";
 
 interface LoginFormProps {
   portal: "admin" | "observer";
@@ -58,6 +59,7 @@ export function LoginForm({ portal, title, subtitle, redirectTo, hint }: LoginFo
 
   return (
     <div className="w-full max-w-md">
+      <Reveal y={18}>
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">{title}</CardTitle>
@@ -110,6 +112,7 @@ export function LoginForm({ portal, title, subtitle, redirectTo, hint }: LoginFo
           )}
         </form>
       </Card>
+      </Reveal>
 
       <Link
         href="/"

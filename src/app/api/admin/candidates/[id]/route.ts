@@ -13,6 +13,7 @@ export async function PATCH(
   const body = await req.json().catch(() => ({}));
   const data: Record<string, unknown> = {};
   if (typeof body.name === "string" && body.name.trim()) data.name = body.name.trim();
+  if (typeof body.nickname === "string") data.nickname = body.nickname.trim();
   if (typeof body.level === "string") data.level = body.level.trim();
   if (typeof body.manifesto === "string") data.manifesto = body.manifesto.trim();
   if (typeof body.avatarBg === "string") data.avatarBg = body.avatarBg.trim();

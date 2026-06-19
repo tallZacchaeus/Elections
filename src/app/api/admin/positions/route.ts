@@ -15,6 +15,7 @@ export async function GET() {
         select: {
           id: true,
           name: true,
+          nickname: true,
           level: true,
           avatarBg: true,
           manifesto: true,
@@ -33,6 +34,7 @@ export async function GET() {
       candidates: p.candidates.map((c) => ({
         id: c.id,
         name: c.name,
+        nickname: c.nickname,
         level: c.level,
         avatarBg: c.avatarBg,
         manifesto: c.manifesto,

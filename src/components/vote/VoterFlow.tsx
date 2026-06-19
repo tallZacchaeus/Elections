@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +40,7 @@ import {
 interface Candidate {
   id: string;
   name: string;
+  nickname: string;
   level: string;
   avatarBg: string;
   manifesto: string;
@@ -318,7 +318,7 @@ export function VoterFlow() {
                   setLoginError("");
                 }}
                 onKeyDown={(e) => e.key === "Enter" && submitLogin()}
-                placeholder="e.g. PUB/22/014"
+                placeholder="e.g. HND/200950, ND/200950"
                 autoFocus
                 className="h-12 text-base tracking-wider uppercase"
               />
@@ -335,14 +335,6 @@ export function VoterFlow() {
               >
                 {verifying ? "Verifying…" : "Verify & continue"}
               </Button>
-              <Separator className="mt-4" />
-              <div className="text-xs leading-relaxed text-muted-foreground">
-                <strong className="text-foreground">Demo numbers:</strong> PUB/22/014
-                · PUB/22/027 · PUB/23/102
-                <br />
-                <span className="text-foreground">PUB/22/001</span> has already
-                voted — try it to see the duplicate-vote flag.
-              </div>
             </CardContent>
           </Card>
           <BackHome />
@@ -428,6 +420,11 @@ export function VoterFlow() {
                     <div className="font-serif text-lg leading-tight font-semibold text-foreground">
                       {c.name}
                     </div>
+                    {c.nickname && (
+                      <div className="mt-0.5 text-sm font-medium text-primary">
+                        “{c.nickname}”
+                      </div>
+                    )}
                     <div className="mt-0.5 text-sm text-muted-foreground">
                       {c.level}
                     </div>
@@ -797,6 +794,11 @@ function ManifestoModal({
                 <DialogTitle className="font-serif mt-0.5 text-xl">
                   {modal.name}
                 </DialogTitle>
+                {modal.nickname && (
+                  <div className="mt-0.5 text-sm font-medium text-primary">
+                    “{modal.nickname}”
+                  </div>
+                )}
                 <div className="mt-0.5 text-sm text-muted-foreground">
                   {modal.level}
                 </div>

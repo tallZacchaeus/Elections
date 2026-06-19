@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { PageHeader, StatCard, LivePill } from "@/components/admin/ui";
+import { VotingControl } from "@/components/admin/VotingControl";
 import { Card } from "@/components/ui/card";
 
 interface Overview {
@@ -51,6 +52,11 @@ export default function OverviewPage() {
         title="Election overview"
         subtitle="Live status of the PASA Executive Election 2026."
         right={<LivePill open={data.votingOpen} />}
+      />
+      <VotingControl
+        votingOpen={data.votingOpen}
+        closesAt={data.closesAt}
+        onChange={(open) => setData((prev) => (prev ? { ...prev, votingOpen: open } : prev))}
       />
       <div className="mb-6 grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))]">
         <StatCard label="Votes cast" value={data.votesCast} />

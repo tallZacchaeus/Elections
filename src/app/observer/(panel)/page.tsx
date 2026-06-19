@@ -106,7 +106,7 @@ export default function ObserverPage() {
               <Skeleton className="h-40" />
             </div>
           ) : (
-            <>
+            <Reveal stagger={0.07} y={16}>
               <div className="mb-[22px] grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3.5">
                 <StatCard label="Votes cast" value={data.votesCast} />
                 <StatCard label="Turnout" value={`${data.turnoutPct}%`} />
@@ -117,7 +117,7 @@ export default function ObserverPage() {
                 />
               </div>
               <ResultsBars positions={data.positions} />
-            </>
+            </Reveal>
           )}
           <Link
             href="/"
