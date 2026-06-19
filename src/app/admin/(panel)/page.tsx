@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { FileDown } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { PageHeader, StatCard, LivePill } from "@/components/admin/ui";
 import { VotingControl } from "@/components/admin/VotingControl";
+import { ResultsAnalysis, type AnalysisData } from "@/components/results/ResultsAnalysis";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface Overview {
   votesCast: number;
@@ -36,11 +40,16 @@ function fmt(dt: string | null): string {
 
 export default function OverviewPage() {
   const [data, setData] = useState<Overview | null>(null);
+  const [results, setResults] = useState<AnalysisData | null>(null);
 
   useEffect(() => {
     fetch("/api/overview")
       .then((r) => r.json())
       .then(setData)
+      .catch(() => {});
+    fetch("/api/results")
+      .then((r) => r.json())
+      .then(setResults)
       .catch(() => {});
   }, []);
 
@@ -50,7 +59,7 @@ export default function OverviewPage() {
     <Reveal stagger={0.06}>
       <PageHeader
         title="Election overview"
-        subtitle="Live status of the PASA Executive Election 2026."
+        subtitle="Live status and result analysis."
         right={<LivePill open={data.votingOpen} />}
       />
       <VotingControl
@@ -64,7 +73,7 @@ export default function OverviewPage() {
         <StatCard label="Turnout" value={`${data.turnoutPct}%`} />
         <StatCard label="Flagged attempts" value={data.flaggedCount} />
       </div>
-      <Card className="p-5">
+      <Card className="mb-6 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-foreground">Turnout progress</h3>
           <span className="text-[12.5px] text-muted-foreground">{data.votesCast} of {data.totalEligible} voters</span>
@@ -82,6 +91,27 @@ export default function OverviewPage() {
           <span>Candidates: {data.candidates}</span>
         </div>
       </Card>
+
+      {/* Result analysis (60% of eligible voters win rule) */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="font-display text-xl font-bold text-foreground">Result analysis</h3>
+          <p className="text-sm text-muted-foreground">
+            Each candidate&apos;s standing against the {results?.thresholdPct ?? 60}% win threshold.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="gap-2">
+          <Link href="/admin/results/report" target="_blank">
+            <FileDown className="size-4" />
+            Download PDF report
+          </Link>
+        </Button>
+      </div>
+      {results ? (
+        <ResultsAnalysis data={results} />
+      ) : (
+        <p className="text-sm text-muted-foreground">Loading analysis…</p>
+      )}
     </Reveal>
   );
 }

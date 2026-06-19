@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { PageHeader } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,9 @@ export default function AdminResultsPage() {
           <div className="no-print flex gap-2">
             <Button variant="outline" size="sm" onClick={() => exportAs("csv")}>Export CSV</Button>
             <Button variant="outline" size="sm" onClick={() => exportAs("xls")}>Export Excel</Button>
-            <Button variant="outline" size="sm" onClick={() => window.print()}>Export PDF</Button>
+            <Button asChild size="sm">
+              <Link href="/admin/results/report" target="_blank">PDF report</Link>
+            </Button>
           </div>
         }
       />
