@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 interface ElectionSettings {
   id: string;
@@ -20,6 +21,7 @@ interface ElectionSettings {
   department: string;
   status: string;
   winThresholdPct: number;
+  autoSchedule: boolean;
   votingOpensAt: string | null;
   votingClosesAt: string | null;
 }
@@ -63,6 +65,7 @@ export default function SettingsPage() {
         faculty: s.faculty,
         department: s.department,
         winThresholdPct: s.winThresholdPct,
+        autoSchedule: s.autoSchedule,
         votingOpensAt: s.votingOpensAt ? new Date(s.votingOpensAt).toISOString() : null,
         votingClosesAt: s.votingClosesAt ? new Date(s.votingClosesAt).toISOString() : null,
       }),
@@ -117,11 +120,25 @@ export default function SettingsPage() {
             <Input type="datetime-local" value={toLocalInput(s.votingClosesAt)} onChange={(e) => update("votingClosesAt", e.target.value)} />
           </Field>
         </div>
-        <p className="rounded-md border bg-muted/40 px-3 py-2.5 text-[12.5px] text-muted-foreground">
-          Opening and closing voting is controlled from the{" "}
-          <Link href="/admin/elections" className="font-semibold text-primary">Elections</Link>{" "}
-          page (or the Overview control). The dates above are shown to voters as the schedule.
-        </p>
+        <div className="flex items-start gap-3 rounded-md border bg-muted/40 px-3 py-3">
+          <Switch
+            id="autoSchedule"
+            checked={s.autoSchedule}
+            onCheckedChange={(c) => update("autoSchedule", c)}
+          />
+          <div>
+            <Label htmlFor="autoSchedule" className="cursor-pointer text-sm font-semibold text-foreground">
+              Open &amp; close automatically at the scheduled times
+            </Label>
+            <p className="mt-1 text-[12.5px] text-muted-foreground">
+              When on, this election opens itself at <strong>Voting opens</strong> and closes at{" "}
+              <strong>Voting closes</strong> — no manual action needed. Set the times above, leave the
+              election in <strong>Draft</strong>, and it will go live on schedule. When off, you open and
+              close it manually from the{" "}
+              <Link href="/admin/elections" className="font-semibold text-primary">Elections</Link> page.
+            </p>
+          </div>
+        </div>
         <Button onClick={save} disabled={saving} className="self-start">
           {saving ? "Saving…" : "Save changes"}
         </Button>

@@ -19,10 +19,29 @@ interface ElectionRow {
   faculty: string;
   department: string;
   status: "DRAFT" | "OPEN" | "CLOSED" | "ARCHIVED";
+  autoSchedule: boolean;
+  votingOpensAt: string | null;
+  votingClosesAt: string | null;
   positions: number;
   voters: number;
   votesCast: number;
   createdAt: string;
+}
+
+function fmt(dt: string | null): string {
+  if (!dt) return "";
+  try {
+    return new Date(dt).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch {
+    return "";
+  }
 }
 
 const DEFAULTS = {
@@ -166,10 +185,21 @@ export default function ElectionsPage() {
                       <h3 className="text-lg font-semibold text-foreground">{e.title}</h3>
                       <StatusBadge status={e.status} />
                       {isManaged && <Badge variant="secondary">Managing</Badge>}
+                      {e.autoSchedule && <Badge variant="outline">Auto-scheduled</Badge>}
                     </div>
                     <div className="mt-1.5 text-[12.5px] text-muted-foreground">
                       {e.department} · {e.positions} positions · {e.voters} voters · {e.votesCast} votes cast
                     </div>
+                    {e.autoSchedule && e.status === "DRAFT" && e.votingOpensAt && (
+                      <div className="mt-1 text-[12.5px] font-medium text-primary">
+                        Opens automatically {fmt(e.votingOpensAt)}
+                      </div>
+                    )}
+                    {e.autoSchedule && e.status === "OPEN" && e.votingClosesAt && (
+                      <div className="mt-1 text-[12.5px] font-medium text-primary">
+                        Closes automatically {fmt(e.votingClosesAt)}
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-wrap justify-end gap-2">
                     {!isManaged && (

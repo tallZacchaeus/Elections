@@ -17,6 +17,7 @@ export async function GET() {
       department: election.department,
       status: election.status,
       winThresholdPct: election.winThresholdPct,
+      autoSchedule: election.autoSchedule,
       votingOpensAt: election.votingOpensAt,
       votingClosesAt: election.votingClosesAt,
     },
@@ -40,6 +41,7 @@ export async function PUT(req: Request) {
     const t = parseThresholdPct(body.winThresholdPct);
     if (t !== null) data.winThresholdPct = t;
   }
+  if (typeof body.autoSchedule === "boolean") data.autoSchedule = body.autoSchedule;
 
   const updated = await prisma.election.update({ where: { id: election.id }, data });
   return NextResponse.json({ election: updated });

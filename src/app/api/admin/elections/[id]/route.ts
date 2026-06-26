@@ -27,6 +27,7 @@ export async function PATCH(
     const t = parseThresholdPct(body.winThresholdPct);
     if (t !== null) data.winThresholdPct = t;
   }
+  if (typeof body.autoSchedule === "boolean") data.autoSchedule = body.autoSchedule;
 
   let openingThis = false;
   if (typeof body.status === "string") {
