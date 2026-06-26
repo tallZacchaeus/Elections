@@ -33,11 +33,9 @@ export function ResultsBars({ positions }: { positions: ResultPosition[] }) {
           bar.style.width = `${target}%`;
           return;
         }
-        gsap.fromTo(
-          bar,
-          { width: "0%" },
-          { width: `${target}%`, duration: 0.85, ease: "power2.out" },
-        );
+        // Animate from the bar's current width to the new target so live
+        // updates ease smoothly instead of resetting to zero each poll.
+        gsap.to(bar, { width: `${target}%`, duration: 0.85, ease: "power2.out" });
       });
     }, scope);
     return () => ctx.revert();

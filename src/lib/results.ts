@@ -1,12 +1,25 @@
 import { prisma } from "./db";
 import { BAR_PALETTE } from "./theme";
-import { pct } from "./utils";
+import { pct, classifyLevel, type StudentLevel } from "./utils";
+
+/**
+ * Winning rule: a candidate must reach this share of ALL eligible voters
+ * (not merely of votes cast) before they can be declared the winner.
+ */
+export const WIN_THRESHOLD_PCT = 60;
 
 export interface ResultCandidate {
   id: string;
   name: string;
   votes: number;
+  /** Percentage within the position's cast votes (whole number). */
   pct: number;
+  /** Percentage of ALL eligible voters (one decimal) — basis of the win rule. */
+  pctOfEligible: number;
+  /** True once votes ≥ the win line (60% of eligible). */
+  meetsThreshold: boolean;
+  /** Votes still required to reach the win line (0 once met). */
+  votesNeeded: number;
   leading: boolean;
   barColor: string;
 }
@@ -15,7 +28,20 @@ export interface ResultPosition {
   id: string;
   title: string;
   total: number;
+  /** Votes required to win this position (60% of eligible voters). */
+  thresholdVotes: number;
+  /** Id of the candidate who has reached the win line, if any. */
+  winnerId: string | null;
+  /** Name of the declared winner, if any. */
+  winnerName: string | null;
   candidates: ResultCandidate[];
+}
+
+export interface LevelStat {
+  level: StudentLevel;
+  eligible: number;
+  voted: number;
+  turnoutPct: number;
 }
 
 export interface ResultsPayload {
@@ -24,6 +50,16 @@ export interface ResultsPayload {
   totalEligible: number;
   turnoutPct: number;
   flaggedCount: number;
+  /** The configured win threshold as a percentage of eligible voters. */
+  thresholdPct: number;
+  /** Absolute votes required to win (ceil of thresholdPct% of eligible). */
+  thresholdVotes: number;
+  /** Electorate split by programme level (ND / HND), eligible vs voted. */
+  levels: LevelStat[];
+}
+
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
 }
 
 /**
@@ -32,7 +68,7 @@ export interface ResultsPayload {
  * which is more meaningful than counting individual position votes.
  */
 export async function computeResults(electionId: string): Promise<ResultsPayload> {
-  const [positions, voteGroups, totalEligible, votesCast, flaggedCount] =
+  const [positions, voteGroups, totalEligible, votesCast, flaggedCount, voterLevels] =
     await Promise.all([
       prisma.position.findMany({
         where: { electionId },
@@ -52,31 +88,75 @@ export async function computeResults(electionId: string): Promise<ResultsPayload
       prisma.voter.count({ where: { electionId } }),
       prisma.voter.count({ where: { electionId, hasVoted: true } }),
       prisma.flaggedAttempt.count({ where: { electionId } }),
+      prisma.voter.findMany({
+        where: { electionId },
+        select: { matricNumber: true, hasVoted: true },
+      }),
     ]);
+
+  // Electorate split by programme level (ND / HND).
+  const levelAgg: Record<StudentLevel, { eligible: number; voted: number }> = {
+    ND: { eligible: 0, voted: 0 },
+    HND: { eligible: 0, voted: 0 },
+    OTHER: { eligible: 0, voted: 0 },
+  };
+  for (const v of voterLevels) {
+    const lvl = classifyLevel(v.matricNumber);
+    levelAgg[lvl].eligible += 1;
+    if (v.hasVoted) levelAgg[lvl].voted += 1;
+  }
+  const levels: LevelStat[] = (["ND", "HND", "OTHER"] as StudentLevel[])
+    .filter((l) => levelAgg[l].eligible > 0)
+    .map((l) => ({
+      level: l,
+      eligible: levelAgg[l].eligible,
+      voted: levelAgg[l].voted,
+      turnoutPct: pct(levelAgg[l].voted, levelAgg[l].eligible),
+    }));
 
   const tally = new Map<string, number>();
   for (const g of voteGroups) tally.set(g.candidateId, g._count._all);
+
+  // Absolute votes needed to win: 60% of all eligible voters, rounded up.
+  const thresholdVotes = Math.ceil((totalEligible * WIN_THRESHOLD_PCT) / 100);
 
   const resultPositions: ResultPosition[] = positions.map((p) => {
     const counts = p.candidates.map((c) => tally.get(c.id) ?? 0);
     const total = counts.reduce((a, b) => a + b, 0);
     const max = Math.max(0, ...counts);
+
+    let winnerId: string | null = null;
+    let winnerName: string | null = null;
+
+    const candidates = p.candidates.map((c, i) => {
+      const votes = tally.get(c.id) ?? 0;
+      const leading = votes === max && total > 0;
+      const meetsThreshold = totalEligible > 0 && votes >= thresholdVotes;
+      if (meetsThreshold && votes === max) {
+        winnerId = c.id;
+        winnerName = c.name;
+      }
+      return {
+        id: c.id,
+        name: c.name,
+        votes,
+        pct: pct(votes, total),
+        pctOfEligible: totalEligible > 0 ? round1((votes / totalEligible) * 100) : 0,
+        meetsThreshold,
+        votesNeeded: Math.max(0, thresholdVotes - votes),
+        leading,
+        barColor: leading ? "#c8932a" : BAR_PALETTE[i % BAR_PALETTE.length],
+      };
+    });
+
     return {
       id: p.id,
       title: p.title,
       total,
-      candidates: p.candidates.map((c, i) => {
-        const votes = tally.get(c.id) ?? 0;
-        const leading = votes === max && total > 0;
-        return {
-          id: c.id,
-          name: c.name,
-          votes,
-          pct: pct(votes, total),
-          leading,
-          barColor: leading ? "#c8932a" : BAR_PALETTE[i % BAR_PALETTE.length],
-        };
-      }),
+      thresholdVotes,
+      winnerId,
+      winnerName,
+      candidates,
     };
   });
 
@@ -86,5 +166,8 @@ export async function computeResults(electionId: string): Promise<ResultsPayload
     totalEligible,
     turnoutPct: pct(votesCast, totalEligible),
     flaggedCount,
+    thresholdPct: WIN_THRESHOLD_PCT,
+    thresholdVotes,
+    levels,
   };
 }

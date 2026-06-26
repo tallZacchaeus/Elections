@@ -26,6 +26,7 @@ export async function GET() {
       matricNumber: v.matricNumber,
       fullName: v.fullName,
       hasVoted: v.hasVoted,
+      votedAt: v.votedAt,
     })),
   });
 }

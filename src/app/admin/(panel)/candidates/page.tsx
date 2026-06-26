@@ -158,7 +158,7 @@ export default function CandidatesPage() {
       <PageHeader title="Manage candidates" subtitle="Add or review accredited candidates for each position." />
 
       {/* Add candidate */}
-      <Card className="mb-4.5 grid grid-cols-[1fr_2fr] items-start gap-3 p-5">
+      <Card className="mb-4.5 grid grid-cols-1 items-start gap-3 p-5 sm:grid-cols-[1fr_2fr]">
         <div>
           <Label className="mb-1.5">Position</Label>
           <Select value={posId} onValueChange={setPosId}>

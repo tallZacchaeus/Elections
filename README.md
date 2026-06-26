@@ -128,13 +128,24 @@ The whole stack (app + Postgres) runs with one command.
 
 ## Upgrading from a single-election version
 
-The multi-election release adds an `Election` table and scopes all data to it, so a database from the earlier single-election version must be reset:
+The multi-election release adds an `Election` table and scopes all data to it. A **data-preserving migration** is provided so an existing single-election database keeps all of its voters, votes and results — the current election simply becomes "Election #1" (status CLOSED).
+
+**Always back up first**, then run the migration once against the live database (while the app container is stopped, the `db` service stays up):
 
 ```bash
-pnpm db:reset   # wipes data, recreates the schema, re-seeds accounts
+# 1. Back up
+docker compose exec -T db pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup-$(date +%F-%H%M).sql
+
+# 2. Stop the app, apply the migration, bring the app back up
+docker compose stop app
+docker compose exec -T db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 \
+  < prisma/upgrade-to-multi-election.sql
+docker compose up -d --build app
 ```
 
-(For a Docker deployment the entrypoint runs `prisma db push` on boot; an old database will need a one-time reset.)
+The migration is transactional and guarded (it refuses to run twice). After it runs, `prisma db push` on boot is a no-op — the schema is already in sync, so no data is altered or dropped.
+
+> For a throwaway/fresh database with no data worth keeping, you can instead just `pnpm db:reset` (destructive) or let the entrypoint create the schema on first boot.
 
 ## Security notes
 

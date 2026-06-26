@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { PageHeader } from "@/components/admin/ui";
 import { NoElection } from "@/components/admin/NoElection";
 import { Button } from "@/components/ui/button";
 import { ResultsBars, type ResultPosition } from "@/components/results/ResultsBars";
+import { useLiveData } from "@/hooks/useLiveData";
 
 interface Results {
   election: { id: string; title: string; status: string } | null;
@@ -16,14 +17,7 @@ interface Results {
 }
 
 export default function AdminResultsPage() {
-  const [data, setData] = useState<Results | null>(null);
-
-  useEffect(() => {
-    fetch("/api/results")
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => {});
-  }, []);
+  const data = useLiveData<Results>("/api/results");
 
   function exportAs(format: "csv" | "xls") {
     window.location.href = `/api/export?format=${format}`;
@@ -40,7 +34,9 @@ export default function AdminResultsPage() {
           <div className="no-print flex gap-2">
             <Button variant="outline" size="sm" onClick={() => exportAs("csv")}>Export CSV</Button>
             <Button variant="outline" size="sm" onClick={() => exportAs("xls")}>Export Excel</Button>
-            <Button variant="outline" size="sm" onClick={() => window.print()}>Export PDF</Button>
+            <Button asChild size="sm">
+              <Link href="/admin/results/report" target="_blank">PDF report</Link>
+            </Button>
           </div>
         }
       />

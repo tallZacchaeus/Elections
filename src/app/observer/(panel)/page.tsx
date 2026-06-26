@@ -1,35 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { ResultsBars, type ResultPosition } from "@/components/results/ResultsBars";
+import { ResultsAnalysis, type AnalysisData } from "@/components/results/ResultsAnalysis";
+import { LevelBreakdown } from "@/components/results/LevelBreakdown";
+import { useLiveData } from "@/hooks/useLiveData";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, Download, LogOut } from "lucide-react";
-
-interface Results {
-  election: { id: string; title: string; status: string } | null;
-  positions: ResultPosition[];
-  votesCast: number;
-  turnoutPct: number;
-  flaggedCount: number;
-}
+import { Eye, Download, FileDown, LogOut } from "lucide-react";
 
 export default function ObserverPage() {
   const router = useRouter();
-  const [data, setData] = useState<Results | null>(null);
-
-  useEffect(() => {
-    fetch("/api/results")
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => {});
-  }, []);
+  const data = useLiveData<AnalysisData>("/api/results");
 
   function exportAs(format: "csv" | "xls") {
     window.location.href = `/api/export?format=${format}`;
@@ -77,11 +64,10 @@ export default function ObserverPage() {
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3.5">
             <div>
               <h1 className="font-serif mb-1 text-[26px] font-semibold text-foreground">
-                Results monitor
+                Election overview
               </h1>
               <p className="text-sm text-muted-foreground">
-                You may view and export results. Editing is disabled for
-                observers.
+                Live status and result analysis. Editing is disabled for observers.
               </p>
             </div>
             <div className="no-print flex gap-2">
@@ -91,15 +77,18 @@ export default function ObserverPage() {
               <Button variant="outline" size="sm" onClick={() => exportAs("xls")}>
                 <Download className="size-3.5" /> Excel
               </Button>
-              <Button size="sm" onClick={() => window.print()}>
-                <Download className="size-3.5" /> PDF
+              <Button asChild size="sm">
+                <Link href="/observer/report" target="_blank">
+                  <FileDown className="size-3.5" /> PDF report
+                </Link>
               </Button>
             </div>
           </div>
 
           {!data ? (
             <div className="flex flex-col gap-4">
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3.5">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3.5">
+                <Skeleton className="h-20" />
                 <Skeleton className="h-20" />
                 <Skeleton className="h-20" />
                 <Skeleton className="h-20" />
@@ -112,16 +101,31 @@ export default function ObserverPage() {
             </p>
           ) : (
             <Reveal stagger={0.07} y={16}>
-              <div className="mb-[22px] grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3.5">
+              <div className="mb-[22px] grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3.5">
                 <StatCard label="Votes cast" value={data.votesCast} />
+                <StatCard label="Eligible voters" value={data.totalEligible} />
                 <StatCard label="Turnout" value={`${data.turnoutPct}%`} />
-                <StatCard
-                  label="Flagged attempts"
-                  value={data.flaggedCount}
-                  muted={data.flaggedCount > 0}
-                />
+                <StatCard label={`Win line (${data.thresholdPct}%)`} value={`${data.thresholdVotes}`} />
               </div>
-              <ResultsBars positions={data.positions} />
+
+              {data.levels?.length > 0 && (
+                <div className="mb-6">
+                  <h2 className="mb-3 font-display text-xl font-bold text-foreground">
+                    Voters by level (ND / HND)
+                  </h2>
+                  <LevelBreakdown levels={data.levels} />
+                </div>
+              )}
+
+              <ResultsBars positions={data.positions as unknown as ResultPosition[]} />
+
+              <div className="mt-7 mb-3">
+                <h2 className="font-display text-xl font-bold text-foreground">Result analysis</h2>
+                <p className="text-sm text-muted-foreground">
+                  Each candidate&apos;s standing against the {data.thresholdPct}% win threshold.
+                </p>
+              </div>
+              <ResultsAnalysis data={data} />
             </Reveal>
           )}
           <Link
