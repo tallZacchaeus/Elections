@@ -34,6 +34,8 @@ model Election {
   status          ElectionStatus   @default(DRAFT)
   /// Share of ALL eligible voters a candidate must reach to win (1–100).
   winThresholdPct Int              @default(60)
+  /// When true, the election opens/closes itself based on the schedule below.
+  autoSchedule    Boolean          @default(false)
   votingOpensAt   DateTime?
   votingClosesAt  DateTime?
   positions       Position[]
