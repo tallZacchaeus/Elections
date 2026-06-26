@@ -19,6 +19,7 @@ interface ElectionSettings {
   faculty: string;
   department: string;
   status: string;
+  winThresholdPct: number;
   votingOpensAt: string | null;
   votingClosesAt: string | null;
 }
@@ -61,6 +62,7 @@ export default function SettingsPage() {
         institution: s.institution,
         faculty: s.faculty,
         department: s.department,
+        winThresholdPct: s.winThresholdPct,
         votingOpensAt: s.votingOpensAt ? new Date(s.votingOpensAt).toISOString() : null,
         votingClosesAt: s.votingClosesAt ? new Date(s.votingClosesAt).toISOString() : null,
       }),
@@ -91,6 +93,21 @@ export default function SettingsPage() {
         </Field>
         <Field label="Department">
           <Input value={s.department} onChange={(e) => update("department", e.target.value)} />
+        </Field>
+        <Field label="Winning threshold (% of eligible voters)">
+          <Input
+            type="number"
+            min={1}
+            max={100}
+            value={s.winThresholdPct}
+            onChange={(e) => update("winThresholdPct", Number(e.target.value))}
+            className="max-w-[160px]"
+          />
+          <p className="mt-1.5 text-[12.5px] text-muted-foreground">
+            A candidate must reach this share of <strong>all eligible voters</strong> to be
+            declared the winner (e.g. 60 for a two-thirds-style rule, 50 for a simple majority).
+            Applies only to this election.
+          </p>
         </Field>
         <div className="flex flex-wrap gap-3.5">
           <Field label="Voting opens" className="min-w-[220px] flex-1">

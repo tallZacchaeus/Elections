@@ -3,8 +3,9 @@ import { BAR_PALETTE } from "./theme";
 import { pct, classifyLevel, type StudentLevel } from "./utils";
 
 /**
- * Winning rule: a candidate must reach this share of ALL eligible voters
- * (not merely of votes cast) before they can be declared the winner.
+ * Default winning rule: a candidate must reach this share of ALL eligible
+ * voters (not merely of votes cast) before being declared the winner.
+ * Each election can override this via `Election.winThresholdPct`.
  */
 export const WIN_THRESHOLD_PCT = 60;
 
@@ -68,8 +69,12 @@ function round1(n: number): number {
  * which is more meaningful than counting individual position votes.
  */
 export async function computeResults(electionId: string): Promise<ResultsPayload> {
-  const [positions, voteGroups, totalEligible, votesCast, flaggedCount, voterLevels] =
+  const [election, positions, voteGroups, totalEligible, votesCast, flaggedCount, voterLevels] =
     await Promise.all([
+      prisma.election.findUnique({
+        where: { id: electionId },
+        select: { winThresholdPct: true },
+      }),
       prisma.position.findMany({
         where: { electionId },
         orderBy: { order: "asc" },
@@ -117,8 +122,10 @@ export async function computeResults(electionId: string): Promise<ResultsPayload
   const tally = new Map<string, number>();
   for (const g of voteGroups) tally.set(g.candidateId, g._count._all);
 
-  // Absolute votes needed to win: 60% of all eligible voters, rounded up.
-  const thresholdVotes = Math.ceil((totalEligible * WIN_THRESHOLD_PCT) / 100);
+  // Per-election win threshold (falls back to the default if unset).
+  const thresholdPct = election?.winThresholdPct ?? WIN_THRESHOLD_PCT;
+  // Absolute votes needed to win: thresholdPct% of all eligible voters, rounded up.
+  const thresholdVotes = Math.ceil((totalEligible * thresholdPct) / 100);
 
   const resultPositions: ResultPosition[] = positions.map((p) => {
     const counts = p.candidates.map((c) => tally.get(c.id) ?? 0);
@@ -166,7 +173,7 @@ export async function computeResults(electionId: string): Promise<ResultsPayload
     totalEligible,
     turnoutPct: pct(votesCast, totalEligible),
     flaggedCount,
-    thresholdPct: WIN_THRESHOLD_PCT,
+    thresholdPct,
     thresholdVotes,
     levels,
   };

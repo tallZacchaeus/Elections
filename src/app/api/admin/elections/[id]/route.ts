@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/guard";
 import { prisma } from "@/lib/db";
+import { parseThresholdPct } from "@/lib/utils";
 
 const STATUSES = ["DRAFT", "OPEN", "CLOSED", "ARCHIVED"] as const;
 type Status = (typeof STATUSES)[number];
@@ -22,6 +23,10 @@ export async function PATCH(
   if (typeof body.department === "string") data.department = body.department.trim();
   if ("votingOpensAt" in body) data.votingOpensAt = body.votingOpensAt ? new Date(body.votingOpensAt) : null;
   if ("votingClosesAt" in body) data.votingClosesAt = body.votingClosesAt ? new Date(body.votingClosesAt) : null;
+  if ("winThresholdPct" in body) {
+    const t = parseThresholdPct(body.winThresholdPct);
+    if (t !== null) data.winThresholdPct = t;
+  }
 
   let openingThis = false;
   if (typeof body.status === "string") {

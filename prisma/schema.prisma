@@ -32,6 +32,8 @@ model Election {
   faculty         String           @default("Faculty of Management & Communication Studies")
   department      String           @default("Department of Public Administration")
   status          ElectionStatus   @default(DRAFT)
+  /// Share of ALL eligible voters a candidate must reach to win (1–100).
+  winThresholdPct Int              @default(60)
   votingOpensAt   DateTime?
   votingClosesAt  DateTime?
   positions       Position[]
