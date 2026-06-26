@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
+import type { Election } from "@prisma/client";
 import { getSession, type Role, type SessionPayload } from "./auth";
+import { getManagedElection } from "./elections";
 
 type GuardResult =
   | { ok: true; session: SessionPayload }
+  | { ok: false; response: NextResponse };
+
+type AdminElectionResult =
+  | { ok: true; session: SessionPayload; election: Election }
   | { ok: false; response: NextResponse };
 
 /**
@@ -24,4 +30,25 @@ export async function requireRole(roles?: Role[]): Promise<GuardResult> {
     };
   }
   return { ok: true, session };
+}
+
+/**
+ * Guard an admin API route AND resolve the election the admin is managing.
+ * Returns 409 when no election exists yet (the admin must create one first).
+ */
+export async function requireAdminElection(): Promise<AdminElectionResult> {
+  const guard = await requireRole(["ADMIN"]);
+  if (!guard.ok) return guard;
+
+  const election = await getManagedElection();
+  if (!election) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: "No election yet. Create one to begin.", noElection: true },
+        { status: 409 },
+      ),
+    };
+  }
+  return { ok: true, session: guard.session, election };
 }

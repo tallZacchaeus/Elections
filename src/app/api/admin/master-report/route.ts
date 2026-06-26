@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { requireRole } from "@/lib/guard";
+import { requireAdminElection } from "@/lib/guard";
 import { prisma } from "@/lib/db";
 import { computeResults } from "@/lib/results";
 import { classifyLevel } from "@/lib/utils";
@@ -25,15 +25,27 @@ function fmt(dt: Date | string | null): string {
  * (Summary, Results, Voter levels, Roster, Flagged attempts).
  */
 export async function GET() {
-  const guard = await requireRole(["ADMIN"]);
+  const guard = await requireAdminElection();
   if (!guard.ok) return guard.response;
+  const { election } = guard;
 
-  const [results, setting, voters, flagged] = await Promise.all([
-    computeResults(),
-    prisma.setting.findUnique({ where: { id: 1 } }),
-    prisma.voter.findMany({ orderBy: { matricNumber: "asc" } }),
-    prisma.flaggedAttempt.findMany({ orderBy: { createdAt: "desc" } }),
+  const [results, voters, flagged] = await Promise.all([
+    computeResults(election.id),
+    prisma.voter.findMany({
+      where: { electionId: election.id },
+      orderBy: { matricNumber: "asc" },
+    }),
+    prisma.flaggedAttempt.findMany({
+      where: { electionId: election.id },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
+  const setting = {
+    institution: election.institution,
+    faculty: election.faculty,
+    department: election.department,
+    electionTitle: election.title,
+  };
 
   const wb = XLSX.utils.book_new();
   const stamp = fmt(new Date());

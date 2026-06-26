@@ -9,11 +9,13 @@ import { VotingControl } from "@/components/admin/VotingControl";
 import { ResultsAnalysis, type AnalysisData } from "@/components/results/ResultsAnalysis";
 import { LevelBreakdown } from "@/components/results/LevelBreakdown";
 import { useLiveData } from "@/hooks/useLiveData";
+import { NoElection } from "@/components/admin/NoElection";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface Overview {
+  election: { id: string; title: string; status: string };
   votesCast: number;
   totalEligible: number;
   turnoutPct: number;
@@ -45,6 +47,7 @@ export default function OverviewPage() {
   // Overview keeps local state so the voting toggle reflects instantly; it is
   // also polled so other figures stay live.
   const [data, setData] = useState<Overview | null>(null);
+  const [noElection, setNoElection] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -55,7 +58,13 @@ export default function OverviewPage() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 6500);
       fetch("/api/overview", { signal: controller.signal })
-        .then((r) => (r.ok ? r.json() : null))
+        .then((r) => {
+          if (r.status === 409) {
+            if (active) setNoElection(true);
+            return null;
+          }
+          return r.ok ? r.json() : null;
+        })
         .then((d) => active && d && setData(d))
         .catch(() => {})
         .finally(() => {
@@ -76,13 +85,14 @@ export default function OverviewPage() {
 
   const results = useLiveData<AnalysisData>("/api/results");
 
+  if (noElection) return <NoElection />;
   if (!data) return <p className="text-muted-foreground">Loading overview…</p>;
 
   return (
     <Reveal stagger={0.06}>
       <PageHeader
         title="Election overview"
-        subtitle="Live status and result analysis."
+        subtitle={`Live status of ${data.election.title}.`}
         right={
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="gap-1.5">
@@ -94,9 +104,16 @@ export default function OverviewPage() {
         }
       />
       <VotingControl
+        electionId={data.election.id}
         votingOpen={data.votingOpen}
         closesAt={data.closesAt}
-        onChange={(open) => setData((prev) => (prev ? { ...prev, votingOpen: open } : prev))}
+        onChange={(open) =>
+          setData((prev) =>
+            prev
+              ? { ...prev, votingOpen: open, election: { ...prev.election, status: open ? "OPEN" : "CLOSED" } }
+              : prev,
+          )
+        }
       />
       <div className="mb-6 grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))]">
         <StatCard label="Votes cast" value={data.votesCast} />

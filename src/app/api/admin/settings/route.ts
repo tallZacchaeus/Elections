@@ -1,35 +1,40 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/guard";
+import { requireAdminElection } from "@/lib/guard";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
-  const guard = await requireRole(["ADMIN"]);
+  const guard = await requireAdminElection();
   if (!guard.ok) return guard.response;
+  const { election } = guard;
 
-  const setting = await prisma.setting.findUnique({ where: { id: 1 } });
-  return NextResponse.json({ setting });
+  return NextResponse.json({
+    election: {
+      id: election.id,
+      title: election.title,
+      institution: election.institution,
+      faculty: election.faculty,
+      department: election.department,
+      status: election.status,
+      votingOpensAt: election.votingOpensAt,
+      votingClosesAt: election.votingClosesAt,
+    },
+  });
 }
 
 export async function PUT(req: Request) {
-  const guard = await requireRole(["ADMIN"]);
+  const guard = await requireAdminElection();
   if (!guard.ok) return guard.response;
+  const { election } = guard;
 
   const body = await req.json().catch(() => ({}));
   const data: Record<string, unknown> = {};
-
+  if (typeof body.title === "string" && body.title.trim()) data.title = body.title.trim();
   if (typeof body.institution === "string") data.institution = body.institution.trim();
   if (typeof body.faculty === "string") data.faculty = body.faculty.trim();
   if (typeof body.department === "string") data.department = body.department.trim();
-  if (typeof body.electionTitle === "string") data.electionTitle = body.electionTitle.trim();
-  if (typeof body.votingOpen === "boolean") data.votingOpen = body.votingOpen;
-  if (body.votingOpensAt) data.votingOpensAt = new Date(body.votingOpensAt);
-  if (body.votingClosesAt) data.votingClosesAt = new Date(body.votingClosesAt);
+  if ("votingOpensAt" in body) data.votingOpensAt = body.votingOpensAt ? new Date(body.votingOpensAt) : null;
+  if ("votingClosesAt" in body) data.votingClosesAt = body.votingClosesAt ? new Date(body.votingClosesAt) : null;
 
-  const setting = await prisma.setting.upsert({
-    where: { id: 1 },
-    update: data,
-    create: { id: 1, ...data },
-  });
-
-  return NextResponse.json({ setting });
+  const updated = await prisma.election.update({ where: { id: election.id }, data });
+  return NextResponse.json({ election: updated });
 }

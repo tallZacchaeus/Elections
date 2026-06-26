@@ -6,6 +6,7 @@ Built from the Claude Design prototype (kept in [`_design_reference/`](./_design
 
 ## Features
 
+- **Multiple elections over time** — create, run, and archive many elections from one admin console (Admin → Elections). Each election keeps its own positions, candidates, voter roster, votes and results. Open one for voting, close it when done, then start the next. At most one election is open at a time (opening a new one closes the previous), and past results stay viewable by switching which election you manage.
 - **Voter flow** — matric-number verification → position-by-position ballot → review → sealed submission with a verification receipt.
 - **One vote per matric**, enforced atomically in the database. Duplicate attempts are blocked and **flagged**.
 - **Anonymous ballots** — votes are never linked to a voter's identity.
@@ -17,7 +18,7 @@ Built from the Claude Design prototype (kept in [`_design_reference/`](./_design
 
 ## Tech stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · Prisma · PostgreSQL · GSAP · Docker.
+Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui · Prisma · PostgreSQL · GSAP · Docker.
 
 ---
 
@@ -31,10 +32,12 @@ cp .env.example .env            # adjust secrets if you like
 
 docker compose up -d db         # starts Postgres on 127.0.0.1:5544
 pnpm db:push                    # create the schema
-pnpm db:seed                    # load demo data (positions, candidates, 312 voters, accounts)
+pnpm db:seed                    # provisions the admin + observer accounts
 
 pnpm dev                        # http://localhost:3000
 ```
+
+The seed is intentionally minimal — it only creates the staff accounts. Elections (with their positions, candidates and roster) are built through the admin UI: sign in to **/admin → Elections → create**.
 
 **Demo credentials (development seed):**
 
@@ -42,8 +45,6 @@ pnpm dev                        # http://localhost:3000
 |----------|------------------------------|------------------------|
 | Admin    | `admin@oyscatech.edu.ng`     | `ChangeMe!Admin2026`   |
 | Observer | `observer@oyscatech.edu.ng`  | `ChangeMe!Observer2026`|
-
-Demo voter matrics: `PUB/22/014`, `PUB/22/027`, `PUB/23/102` (can vote) · `PUB/22/001` (already voted — shows the duplicate-vote flag).
 
 > Don't have Docker? Point `DATABASE_URL` in `.env` at any Postgres (or MySQL — see below) and run `pnpm db:push && pnpm db:seed`.
 
@@ -98,10 +99,11 @@ The whole stack (app + Postgres) runs with one command.
 
 ### Running a real election
 
-1. Sign in to **/admin** and open **Settings** to set the institution/faculty/department, the open/close times, and the voting-open toggle.
+1. Sign in to **/admin → Elections** and create an election (it becomes the one you're managing). Set the institution/faculty/department and schedule in **Settings**.
 2. In **Candidates**, create your positions and candidates, and upload a photo for each candidate (optional, but recommended so voters can recognise them).
-3. In **Voter roster**, upload a CSV with columns `matric_number, full_name` (a template download is provided). **Uploading replaces the roster and clears any ballots**, so do this before voting opens.
-4. Share the site link. Voters use **Cast your vote**; observers watch **/observer**.
+3. In **Voter roster**, upload a CSV with columns `matric_number, full_name` (a template download is provided). **Uploading replaces this election's roster and clears its ballots**, so do this before voting opens.
+4. On **Elections** (or the Overview control), click **Open voting**. Share the site link — voters use **Cast your vote**; observers watch **/observer**.
+5. When voting ends, click **Close voting**. Results stay available. To run the next election, create another one and repeat — switch which election you manage any time with **Manage**.
 
 ---
 
@@ -123,6 +125,27 @@ The whole stack (app + Postgres) runs with one command.
 | `pnpm db:push`   | Apply the schema to the database                       |
 | `pnpm db:seed`   | Seed demo data                                         |
 | `pnpm db:reset`  | Wipe and re-seed (destructive)                         |
+
+## Upgrading from a single-election version
+
+The multi-election release adds an `Election` table and scopes all data to it. A **data-preserving migration** is provided so an existing single-election database keeps all of its voters, votes and results — the current election simply becomes "Election #1" (status CLOSED).
+
+**Always back up first**, then run the migration once against the live database (while the app container is stopped, the `db` service stays up):
+
+```bash
+# 1. Back up
+docker compose exec -T db pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup-$(date +%F-%H%M).sql
+
+# 2. Stop the app, apply the migration, bring the app back up
+docker compose stop app
+docker compose exec -T db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 \
+  < prisma/upgrade-to-multi-election.sql
+docker compose up -d --build app
+```
+
+The migration is transactional and guarded (it refuses to run twice). After it runs, `prisma db push` on boot is a no-op — the schema is already in sync, so no data is altered or dropped.
+
+> For a throwaway/fresh database with no data worth keeping, you can instead just `pnpm db:reset` (destructive) or let the entrypoint create the schema on first boot.
 
 ## Security notes
 

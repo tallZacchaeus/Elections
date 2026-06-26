@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { normalizeMatric, generateFlagRef } from "@/lib/utils";
 import { signBallotTicket, setBallotCookie } from "@/lib/auth";
+import { getActiveElection } from "@/lib/elections";
 
 export async function POST(req: Request) {
   let body: { matric?: string };
@@ -19,15 +20,17 @@ export async function POST(req: Request) {
     );
   }
 
-  const setting = await prisma.setting.findUnique({ where: { id: 1 } });
-  if (setting && !setting.votingOpen) {
+  const election = await getActiveElection();
+  if (!election) {
     return NextResponse.json(
-      { status: "closed", message: "Voting is currently closed." },
+      { status: "closed", message: "Voting is not open at the moment." },
       { status: 423 },
     );
   }
 
-  const voter = await prisma.voter.findUnique({ where: { matricNumber: matric } });
+  const voter = await prisma.voter.findUnique({
+    where: { electionId_matricNumber: { electionId: election.id, matricNumber: matric } },
+  });
 
   if (!voter) {
     return NextResponse.json(
@@ -43,13 +46,17 @@ export async function POST(req: Request) {
   if (voter.hasVoted) {
     const reference = generateFlagRef();
     await prisma.flaggedAttempt.create({
-      data: { matricNumber: matric, reference },
+      data: { electionId: election.id, matricNumber: matric, reference },
     });
     return NextResponse.json({ status: "flagged", matric, reference });
   }
 
-  // Eligible — issue a short-lived ballot ticket.
-  const token = await signBallotTicket({ matric, voterId: voter.id });
+  // Eligible — issue a short-lived ballot ticket bound to this election.
+  const token = await signBallotTicket({
+    matric,
+    voterId: voter.id,
+    electionId: election.id,
+  });
   await setBallotCookie(token);
 
   return NextResponse.json({ status: "ok", voter: { name: voter.fullName } });

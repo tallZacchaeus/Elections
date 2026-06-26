@@ -1,20 +1,25 @@
 import { NextResponse } from "next/server";
 import Papa from "papaparse";
-import { requireRole } from "@/lib/guard";
+import { requireAdminElection } from "@/lib/guard";
 import { prisma } from "@/lib/db";
 import { normalizeMatric } from "@/lib/utils";
 
 export async function GET() {
-  const guard = await requireRole(["ADMIN"]);
+  const guard = await requireAdminElection();
   if (!guard.ok) return guard.response;
+  const { election } = guard;
 
   const [voters, total, votedCount] = await Promise.all([
-    prisma.voter.findMany({ orderBy: { matricNumber: "asc" } }),
-    prisma.voter.count(),
-    prisma.voter.count({ where: { hasVoted: true } }),
+    prisma.voter.findMany({
+      where: { electionId: election.id },
+      orderBy: { matricNumber: "asc" },
+    }),
+    prisma.voter.count({ where: { electionId: election.id } }),
+    prisma.voter.count({ where: { electionId: election.id, hasVoted: true } }),
   ]);
 
   return NextResponse.json({
+    election: { id: election.id, title: election.title, status: election.status },
     total,
     votedCount,
     voters: voters.map((v) => ({
@@ -37,8 +42,9 @@ function pick(row: RawRow, keys: string[]): string {
 }
 
 export async function POST(req: Request) {
-  const guard = await requireRole(["ADMIN"]);
+  const guard = await requireAdminElection();
   if (!guard.ok) return guard.response;
+  const { election } = guard;
 
   const body = await req.json().catch(() => ({}));
   const replace = body.replace !== false; // default replace
@@ -75,39 +81,40 @@ export async function POST(req: Request) {
   // De-duplicate within the upload (last wins).
   const dedup = new Map(rows.map((r) => [r.matricNumber, r.fullName]));
   const finalRows = [...dedup.entries()].map(([matricNumber, fullName]) => ({
+    electionId: election.id,
     matricNumber,
     fullName,
   }));
 
   if (replace) {
-    // A fresh roster also resets the (anonymous) ballots, so the election
-    // starts clean. This is intended for setup before voting opens.
+    // A fresh roster also resets this election's ballots, so it starts clean.
     await prisma.$transaction([
-      prisma.vote.deleteMany(),
-      prisma.voter.deleteMany(),
+      prisma.vote.deleteMany({ where: { electionId: election.id } }),
+      prisma.voter.deleteMany({ where: { electionId: election.id } }),
       prisma.voter.createMany({ data: finalRows, skipDuplicates: true }),
     ]);
   } else {
     for (const r of finalRows) {
       await prisma.voter.upsert({
-        where: { matricNumber: r.matricNumber },
+        where: { electionId_matricNumber: { electionId: election.id, matricNumber: r.matricNumber } },
         update: { fullName: r.fullName },
         create: r,
       });
     }
   }
 
-  const total = await prisma.voter.count();
+  const total = await prisma.voter.count({ where: { electionId: election.id } });
   return NextResponse.json({ imported: finalRows.length, total });
 }
 
 export async function DELETE() {
-  const guard = await requireRole(["ADMIN"]);
+  const guard = await requireAdminElection();
   if (!guard.ok) return guard.response;
+  const { election } = guard;
 
   await prisma.$transaction([
-    prisma.vote.deleteMany(),
-    prisma.voter.deleteMany(),
+    prisma.vote.deleteMany({ where: { electionId: election.id } }),
+    prisma.voter.deleteMany({ where: { electionId: election.id } }),
   ]);
   return NextResponse.json({ ok: true });
 }

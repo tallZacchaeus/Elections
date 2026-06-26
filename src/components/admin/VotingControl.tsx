@@ -23,14 +23,16 @@ function fmt(dt: string | null): string {
 }
 
 /**
- * Prominent open/close control for the election. Flips the `votingOpen` flag
- * immediately and surfaces when the scheduled close time has elapsed.
+ * Prominent open/close control for the managed election. Flips the election
+ * status (OPEN ↔ CLOSED) and surfaces when the scheduled close has elapsed.
  */
 export function VotingControl({
+  electionId,
   votingOpen,
   closesAt,
   onChange,
 }: {
+  electionId: string;
   votingOpen: boolean;
   closesAt: string | null;
   onChange: (open: boolean) => void;
@@ -43,15 +45,15 @@ export function VotingControl({
   async function toggle() {
     const next = !votingOpen;
     const msg = next
-      ? "Open voting? Voters will be able to cast their ballots."
+      ? "Open voting? Voters will be able to cast ballots, and any other open election will be closed."
       : "Close voting now? Voters will no longer be able to cast ballots.";
     if (!confirm(msg)) return;
 
     setBusy(true);
-    const res = await fetch("/api/admin/settings", {
-      method: "PUT",
+    const res = await fetch(`/api/admin/elections/${electionId}`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ votingOpen: next }),
+      body: JSON.stringify({ status: next ? "OPEN" : "CLOSED" }),
     });
     setBusy(false);
     if (res.ok) {

@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/guard";
+import { requireAdminElection } from "@/lib/guard";
 import { prisma } from "@/lib/db";
 import { pickAvatarBg } from "@/lib/theme";
 import { candidatePhotoUrl } from "@/lib/utils";
 
 export async function GET() {
-  const guard = await requireRole(["ADMIN"]);
+  const guard = await requireAdminElection();
   if (!guard.ok) return guard.response;
+  const { election } = guard;
 
   const candidates = await prisma.candidate.findMany({
+    where: { position: { electionId: election.id } },
     orderBy: [{ positionId: "asc" }, { order: "asc" }],
     select: {
       id: true,
@@ -39,8 +41,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const guard = await requireRole(["ADMIN"]);
+  const guard = await requireAdminElection();
   if (!guard.ok) return guard.response;
+  const { election } = guard;
 
   const body = await req.json().catch(() => ({}));
   const name = (body.name ?? "").trim();
@@ -52,7 +55,10 @@ export async function POST(req: Request) {
     );
   }
 
-  const position = await prisma.position.findUnique({ where: { id: positionId } });
+  // The position must belong to the election being managed.
+  const position = await prisma.position.findFirst({
+    where: { id: positionId, electionId: election.id },
+  });
   if (!position) {
     return NextResponse.json({ error: "Unknown position." }, { status: 400 });
   }

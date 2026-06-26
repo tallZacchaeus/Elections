@@ -30,6 +30,9 @@ export interface LevelStat {
   turnoutPct: number;
 }
 export interface AnalysisData {
+  /** Present in the multi-election API; null when no election exists. */
+  election?: { id: string; title: string; status: string } | null;
+  flaggedCount?: number;
   positions: AnalysisPosition[];
   votesCast: number;
   totalEligible: number;

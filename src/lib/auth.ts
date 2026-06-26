@@ -83,10 +83,11 @@ export async function clearSessionCookie(): Promise<void> {
 export interface BallotTicket {
   matric: string;
   voterId: string;
+  electionId: string;
 }
 
 export async function signBallotTicket(t: BallotTicket): Promise<string> {
-  return new SignJWT({ matric: t.matric, voterId: t.voterId })
+  return new SignJWT({ matric: t.matric, voterId: t.voterId, electionId: t.electionId })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(BALLOT_TTL)
@@ -98,8 +99,12 @@ export async function verifyBallotTicket(
 ): Promise<BallotTicket | null> {
   try {
     const { payload } = await jwtVerify(token, secretKey());
-    if (!payload.matric || !payload.voterId) return null;
-    return { matric: String(payload.matric), voterId: String(payload.voterId) };
+    if (!payload.matric || !payload.voterId || !payload.electionId) return null;
+    return {
+      matric: String(payload.matric),
+      voterId: String(payload.voterId),
+      electionId: String(payload.electionId),
+    };
   } catch {
     return null;
   }

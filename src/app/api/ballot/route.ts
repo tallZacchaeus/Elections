@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { candidatePhotoUrl } from "@/lib/utils";
+import { getVoterFacingElection } from "@/lib/elections";
 
-/** Public ballot data: positions, candidates and election status. */
+/** Public ballot data for the current election. */
 export async function GET() {
-  const [positions, setting, eligibleCount] = await Promise.all([
+  const election = await getVoterFacingElection();
+
+  if (!election) {
+    return NextResponse.json({ active: false, votingOpen: false });
+  }
+
+  const [positions, eligibleCount] = await Promise.all([
     prisma.position.findMany({
+      where: { electionId: election.id },
       orderBy: { order: "asc" },
       include: {
         candidates: {
@@ -23,26 +31,26 @@ export async function GET() {
         },
       },
     }),
-    prisma.setting.findUnique({ where: { id: 1 } }),
-    prisma.voter.count(),
+    prisma.voter.count({ where: { electionId: election.id } }),
   ]);
 
   const candidatesCount = positions.reduce((a, p) => a + p.candidates.length, 0);
 
   return NextResponse.json({
-    votingOpen: setting?.votingOpen ?? true,
+    active: true,
+    votingOpen: election.status === "OPEN",
     stats: {
       positions: positions.length,
       candidates: candidatesCount,
       eligible: eligibleCount,
     },
     election: {
-      institution: setting?.institution ?? "",
-      faculty: setting?.faculty ?? "",
-      department: setting?.department ?? "",
-      title: setting?.electionTitle ?? "",
-      opensAt: setting?.votingOpensAt ?? null,
-      closesAt: setting?.votingClosesAt ?? null,
+      institution: election.institution,
+      faculty: election.faculty,
+      department: election.department,
+      title: election.title,
+      opensAt: election.votingOpensAt,
+      closesAt: election.votingClosesAt,
     },
     positions: positions.map((p) => ({
       id: p.id,

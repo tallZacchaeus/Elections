@@ -67,10 +67,11 @@ function round1(n: number): number {
  * `votesCast` is the number of voters who have voted (one ballot per voter),
  * which is more meaningful than counting individual position votes.
  */
-export async function computeResults(): Promise<ResultsPayload> {
+export async function computeResults(electionId: string): Promise<ResultsPayload> {
   const [positions, voteGroups, totalEligible, votesCast, flaggedCount, voterLevels] =
     await Promise.all([
       prisma.position.findMany({
+        where: { electionId },
         orderBy: { order: "asc" },
         include: {
           candidates: {
@@ -81,12 +82,16 @@ export async function computeResults(): Promise<ResultsPayload> {
       }),
       prisma.vote.groupBy({
         by: ["candidateId"],
+        where: { electionId },
         _count: { _all: true },
       }),
-      prisma.voter.count(),
-      prisma.voter.count({ where: { hasVoted: true } }),
-      prisma.flaggedAttempt.count(),
-      prisma.voter.findMany({ select: { matricNumber: true, hasVoted: true } }),
+      prisma.voter.count({ where: { electionId } }),
+      prisma.voter.count({ where: { electionId, hasVoted: true } }),
+      prisma.flaggedAttempt.count({ where: { electionId } }),
+      prisma.voter.findMany({
+        where: { electionId },
+        select: { matricNumber: true, hasVoted: true },
+      }),
     ]);
 
   // Electorate split by programme level (ND / HND).

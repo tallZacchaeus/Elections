@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/guard";
 import { computeResults } from "@/lib/results";
-import { prisma } from "@/lib/db";
+import { getManagedElection, getVoterFacingElection } from "@/lib/elections";
 
 function csvEscape(value: string | number): string {
   const s = String(value);
@@ -14,12 +14,17 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const format = url.searchParams.get("format") ?? "csv";
 
-  const [results, setting] = await Promise.all([
-    computeResults(),
-    prisma.setting.findUnique({ where: { id: 1 } }),
-  ]);
+  const election =
+    guard.session.role === "ADMIN"
+      ? await getManagedElection()
+      : await getVoterFacingElection();
 
-  const title = setting?.electionTitle ?? "PASA Election";
+  if (!election) {
+    return new Response("No election to export.", { status: 404 });
+  }
+
+  const results = await computeResults(election.id);
+  const title = election.title;
   const stamp = new Date().toISOString().slice(0, 19).replace("T", " ");
 
   if (format === "xls") {

@@ -16,28 +16,45 @@ enum Role {
   OBSERVER
 }
 
-/// Singleton election configuration (white-label fields shown in the design).
-model Setting {
-  id             Int       @id @default(1)
-  institution    String    @default("Oyo State College of Agriculture and Technology")
-  faculty        String    @default("Faculty of Management & Communication Studies")
-  department     String    @default("Department of Public Administration")
-  electionTitle  String    @default("PASA Executive Election 2026")
-  votingOpensAt  DateTime?
-  votingClosesAt DateTime?
-  votingOpen     Boolean   @default(true)
-  updatedAt      DateTime  @updatedAt @default(now())
+enum ElectionStatus {
+  DRAFT // being set up; not visible to voters
+  OPEN // accepting votes; at most one election is OPEN at a time
+  CLOSED // voting ended; results preserved
+  ARCHIVED // hidden from the default list, still accessible
+}
+
+/// A single election cycle. Everything (positions, candidates, roster, votes)
+/// is scoped to an election, so the admin can run many over time.
+model Election {
+  id              String           @id @default(cuid())
+  title           String
+  institution     String           @default("Oyo State College of Agriculture and Technology")
+  faculty         String           @default("Faculty of Management & Communication Studies")
+  department      String           @default("Department of Public Administration")
+  status          ElectionStatus   @default(DRAFT)
+  votingOpensAt   DateTime?
+  votingClosesAt  DateTime?
+  positions       Position[]
+  voters          Voter[]
+  votes           Vote[]
+  flaggedAttempts FlaggedAttempt[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt @default(now())
+
+  @@index([status])
 }
 
 model Position {
   id         String      @id @default(cuid())
+  election   Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electionId String
   title      String
   order      Int         @default(0)
   candidates Candidate[]
   votes      Vote[]
   createdAt  DateTime    @default(now())
 
-  @@index([order])
+  @@index([electionId])
 }
 
 model Candidate {
@@ -50,7 +67,7 @@ model Candidate {
   avatarBg   String   @default("#0E5A37")
   manifesto  String   @default("")
   order      Int      @default(0)
-  photo      Bytes?   // optional candidate photo, served via /api/candidates/[id]/photo
+  photo      Bytes? // optional candidate photo, served via /api/candidates/[id]/photo
   photoMime  String?
   votes      Vote[]
   createdAt  DateTime @default(now())
@@ -59,38 +76,50 @@ model Candidate {
   @@index([positionId])
 }
 
-/// The eligibility roster. hasVoted is the single source of truth that
-/// enforces one vote per matriculation number.
+/// The eligibility roster for one election. hasVoted enforces one vote per
+/// matriculation number within that election.
 model Voter {
   id           String    @id @default(cuid())
-  matricNumber String    @unique
+  election     Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electionId   String
+  matricNumber String
   fullName     String
   hasVoted     Boolean   @default(false)
   votedAt      DateTime?
   receipt      String?   @unique
   createdAt    DateTime  @default(now())
+
+  @@unique([electionId, matricNumber])
+  @@index([electionId])
 }
 
 /// Anonymous ballot rows. Deliberately NOT linked to a Voter so a person's
 /// identity can never be tied to their selections.
 model Vote {
   id          String    @id @default(cuid())
+  election    Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electionId  String
   position    Position  @relation(fields: [positionId], references: [id], onDelete: Cascade)
   positionId  String
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   candidateId String
   createdAt   DateTime  @default(now())
 
+  @@index([electionId])
   @@index([positionId])
   @@index([candidateId])
 }
 
 model FlaggedAttempt {
   id           String   @id @default(cuid())
+  election     Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electionId   String
   matricNumber String
   reference    String   @unique
   reason       String   @default("Duplicate vote attempt")
   createdAt    DateTime @default(now())
+
+  @@index([electionId])
 }
 
 model AdminUser {

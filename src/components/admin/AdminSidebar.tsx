@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Vote,
   LayoutDashboard,
   Users,
   ClipboardList,
@@ -17,9 +18,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { StatusBadge } from "@/components/admin/StatusBadge";
 import { cn } from "@/lib/utils";
 
 const NAV = [
+  { href: "/admin/elections", label: "Elections", icon: Vote },
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/candidates", label: "Candidates", icon: Users },
   { href: "/admin/roster", label: "Voter roster", icon: ClipboardList },
@@ -29,7 +32,13 @@ const NAV = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
-export function AdminSidebar({ name, title }: { name: string; title: string }) {
+export function AdminSidebar({
+  name,
+  election,
+}: {
+  name: string;
+  election: { title: string; status: string } | null;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -53,9 +62,29 @@ export function AdminSidebar({ name, title }: { name: string; title: string }) {
         </div>
         <div className="leading-tight">
           <div className="font-display text-sm font-bold text-sidebar-foreground">Admin Console</div>
-          <div className="truncate text-[10.5px] text-sidebar-foreground/60">{title}</div>
+          <div className="truncate text-[10.5px] text-sidebar-foreground/60">PASA Election System</div>
         </div>
       </div>
+
+      {/* Managed-election context */}
+      <Link
+        href="/admin/elections"
+        className="mb-3 block rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-3 py-2.5 transition-colors hover:bg-sidebar-accent"
+      >
+        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+          Managing
+        </div>
+        {election ? (
+          <>
+            <div className="mb-1.5 text-[12.5px] font-bold leading-tight text-sidebar-foreground">
+              {election.title}
+            </div>
+            <StatusBadge status={election.status} />
+          </>
+        ) : (
+          <div className="text-[12.5px] text-sidebar-foreground/80">No election — create one →</div>
+        )}
+      </Link>
 
       <nav className="flex flex-col gap-1">
         {NAV.map((item) => {
