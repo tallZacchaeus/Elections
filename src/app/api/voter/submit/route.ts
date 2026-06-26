@@ -20,13 +20,14 @@ export async function POST(req: Request) {
   }
   const selections = body.selections ?? {};
 
-  const setting = await prisma.setting.findUnique({ where: { id: 1 } });
-  if (setting && !setting.votingOpen) {
+  const election = await prisma.election.findUnique({ where: { id: ticket.electionId } });
+  if (!election || election.status !== "OPEN") {
+    await clearBallotCookie();
     return NextResponse.json({ error: "Voting is closed." }, { status: 423 });
   }
 
   const voter = await prisma.voter.findUnique({ where: { id: ticket.voterId } });
-  if (!voter || voter.matricNumber !== ticket.matric) {
+  if (!voter || voter.matricNumber !== ticket.matric || voter.electionId !== election.id) {
     await clearBallotCookie();
     return NextResponse.json({ error: "Voter not recognised." }, { status: 401 });
   }
@@ -38,15 +39,16 @@ export async function POST(req: Request) {
     );
   }
 
-  // Validate every selection against the real ballot.
+  // Validate every selection against this election's ballot.
   const positions = await prisma.position.findMany({
-    include: { candidates: { select: { id: true, positionId: true } } },
+    where: { electionId: election.id },
+    include: { candidates: { select: { id: true } } },
   });
   const validByPosition = new Map(
     positions.map((p) => [p.id, new Set(p.candidates.map((c) => c.id))]),
   );
 
-  const voteData: { positionId: string; candidateId: string }[] = [];
+  const voteData: { electionId: string; positionId: string; candidateId: string }[] = [];
   for (const [positionId, candidateId] of Object.entries(selections)) {
     if (candidateId === "__abstain__" || !candidateId) continue;
     const valid = validByPosition.get(positionId);
@@ -56,7 +58,7 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    voteData.push({ positionId, candidateId });
+    voteData.push({ electionId: election.id, positionId, candidateId });
   }
 
   const receipt = generateReceipt();

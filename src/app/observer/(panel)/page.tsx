@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Eye, Download, LogOut } from "lucide-react";
 
 interface Results {
+  election: { id: string; title: string; status: string } | null;
   positions: ResultPosition[];
   votesCast: number;
   turnoutPct: number;
@@ -105,6 +106,10 @@ export default function ObserverPage() {
               </div>
               <Skeleton className="h-40" />
             </div>
+          ) : !data.election ? (
+            <p className="text-muted-foreground">
+              There is no election to display results for yet.
+            </p>
           ) : (
             <Reveal stagger={0.07} y={16}>
               <div className="mb-[22px] grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3.5">

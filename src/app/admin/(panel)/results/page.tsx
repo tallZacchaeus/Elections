@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { PageHeader } from "@/components/admin/ui";
+import { NoElection } from "@/components/admin/NoElection";
 import { Button } from "@/components/ui/button";
 import { ResultsBars, type ResultPosition } from "@/components/results/ResultsBars";
 
 interface Results {
+  election: { id: string; title: string; status: string } | null;
   positions: ResultPosition[];
   votesCast: number;
   turnoutPct: number;
@@ -26,6 +28,8 @@ export default function AdminResultsPage() {
   function exportAs(format: "csv" | "xls") {
     window.location.href = `/api/export?format=${format}`;
   }
+
+  if (data && !data.election) return <NoElection />;
 
   return (
     <Reveal>

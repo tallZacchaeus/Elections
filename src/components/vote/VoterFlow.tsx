@@ -52,6 +52,7 @@ interface Position {
   candidates: Candidate[];
 }
 interface BallotData {
+  active: boolean;
   votingOpen: boolean;
   stats: { positions: number; candidates: number; eligible: number };
   election: {
@@ -196,6 +197,27 @@ export function VoterFlow() {
       <Centered>
         <Leaf className="size-10 text-muted-foreground" strokeWidth={1.6} />
         <p className="mt-3.5 text-muted-foreground">Loading the ballot…</p>
+      </Centered>
+    );
+  }
+
+  if (!data.active) {
+    return (
+      <Centered>
+        <Leaf className="size-11 text-muted-foreground" strokeWidth={1.6} />
+        <h1 className="font-display mt-4 mb-2 text-2xl font-semibold text-foreground">
+          No active election
+        </h1>
+        <p className="mx-6 max-w-md leading-relaxed text-muted-foreground">
+          There is no election open for voting right now. Please check back later
+          or contact the electoral committee.
+        </p>
+        <Link
+          href="/"
+          className="mt-5 text-sm font-semibold text-primary underline underline-offset-[3px]"
+        >
+          Return to home
+        </Link>
       </Centered>
     );
   }

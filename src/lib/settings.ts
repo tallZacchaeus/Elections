@@ -1,40 +1,37 @@
-import { prisma } from "./db";
+import { getVoterFacingElection } from "./elections";
 
-export interface ElectionSettings {
-  institution: string;
+export interface PortalInfo {
+  hasElection: boolean;
+  title: string;
   faculty: string;
   department: string;
-  electionTitle: string;
+  institution: string;
   votingOpen: boolean;
-  votingOpensAt: Date | null;
-  votingClosesAt: Date | null;
 }
 
-const DEFAULTS: ElectionSettings = {
+const DEFAULTS = {
   institution: "Oyo State College of Agriculture and Technology",
   faculty: "Faculty of Management & Communication Studies",
   department: "Department of Public Administration",
-  electionTitle: "PASA Executive Election 2026",
-  votingOpen: true,
-  votingOpensAt: null,
-  votingClosesAt: null,
+  title: "PASA Election System",
 };
 
-/** Reads settings; returns sensible defaults if the DB is unreachable. */
-export async function getElectionSettings(): Promise<ElectionSettings> {
+/** Voter-facing election info for the portal; safe defaults if the DB is down. */
+export async function getPortalInfo(): Promise<PortalInfo> {
   try {
-    const s = await prisma.setting.findUnique({ where: { id: 1 } });
-    if (!s) return DEFAULTS;
+    const e = await getVoterFacingElection();
+    if (!e) {
+      return { hasElection: false, ...DEFAULTS, votingOpen: false };
+    }
     return {
-      institution: s.institution,
-      faculty: s.faculty,
-      department: s.department,
-      electionTitle: s.electionTitle,
-      votingOpen: s.votingOpen,
-      votingOpensAt: s.votingOpensAt,
-      votingClosesAt: s.votingClosesAt,
+      hasElection: true,
+      title: e.title,
+      faculty: e.faculty,
+      department: e.department,
+      institution: e.institution,
+      votingOpen: e.status === "OPEN",
     };
   } catch {
-    return DEFAULTS;
+    return { hasElection: false, ...DEFAULTS, votingOpen: false };
   }
 }

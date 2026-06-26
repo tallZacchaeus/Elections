@@ -14,6 +14,7 @@ interface PortalProps {
   department: string;
   institution: string;
   votingOpen: boolean;
+  hasElection: boolean;
 }
 
 export function Portal({
@@ -22,6 +23,7 @@ export function Portal({
   department,
   institution,
   votingOpen,
+  hasElection,
 }: PortalProps) {
   const root = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -126,11 +128,11 @@ export function Portal({
                   votingOpen ? "live-dot bg-primary" : "bg-muted-foreground/50",
                 )}
               />
-              {votingOpen ? "Voting is open" : "Voting is closed"}
+              {!hasElection ? "No active election" : votingOpen ? "Voting is open" : "Voting is closed"}
             </div>
 
             <div data-reveal className="mt-8 w-full">
-              {votingOpen ? (
+              {hasElection && votingOpen ? (
                 <Button
                   asChild
                   size="lg"
@@ -140,7 +142,7 @@ export function Portal({
                 </Button>
               ) : (
                 <Button size="lg" className="w-full sm:w-auto sm:px-10" disabled>
-                  Voting is closed
+                  {!hasElection ? "No active election" : "Voting is closed"}
                 </Button>
               )}
             </div>

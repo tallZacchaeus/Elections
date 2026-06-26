@@ -1,31 +1,32 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/guard";
+import { requireAdminElection } from "@/lib/guard";
 import { prisma } from "@/lib/db";
 import { pct } from "@/lib/utils";
 
 export async function GET() {
-  const guard = await requireRole(["ADMIN"]);
+  const guard = await requireAdminElection();
   if (!guard.ok) return guard.response;
+  const { election } = guard;
 
-  const [totalEligible, votesCast, flaggedCount, positions, candidates, setting] =
+  const [totalEligible, votesCast, flaggedCount, positions, candidates] =
     await Promise.all([
-      prisma.voter.count(),
-      prisma.voter.count({ where: { hasVoted: true } }),
-      prisma.flaggedAttempt.count(),
-      prisma.position.count(),
-      prisma.candidate.count(),
-      prisma.setting.findUnique({ where: { id: 1 } }),
+      prisma.voter.count({ where: { electionId: election.id } }),
+      prisma.voter.count({ where: { electionId: election.id, hasVoted: true } }),
+      prisma.flaggedAttempt.count({ where: { electionId: election.id } }),
+      prisma.position.count({ where: { electionId: election.id } }),
+      prisma.candidate.count({ where: { position: { electionId: election.id } } }),
     ]);
 
   return NextResponse.json({
+    election: { id: election.id, title: election.title, status: election.status },
     votesCast,
     totalEligible,
     turnoutPct: pct(votesCast, totalEligible),
     flaggedCount,
     positions,
     candidates,
-    votingOpen: setting?.votingOpen ?? true,
-    opensAt: setting?.votingOpensAt ?? null,
-    closesAt: setting?.votingClosesAt ?? null,
+    votingOpen: election.status === "OPEN",
+    opensAt: election.votingOpensAt,
+    closesAt: election.votingClosesAt,
   });
 }

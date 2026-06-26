@@ -5,6 +5,7 @@ import { Reveal } from "@/components/Reveal";
 import { Avatar } from "@/components/Avatar";
 import { useToast, Toast } from "@/components/Toast";
 import { PageHeader } from "@/components/admin/ui";
+import { NoElection } from "@/components/admin/NoElection";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ export default function CandidatesPage() {
   const { toast, showToast } = useToast();
   const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
+  const [noElection, setNoElection] = useState(false);
 
   const [posId, setPosId] = useState("");
   const [name, setName] = useState("");
@@ -73,6 +75,11 @@ export default function CandidatesPage() {
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/positions");
+    if (res.status === 409) {
+      setNoElection(true);
+      setLoading(false);
+      return;
+    }
     const json = await res.json();
     setPositions(json.positions ?? []);
     if (!posId && json.positions?.[0]) setPosId(json.positions[0].id);
@@ -143,6 +150,7 @@ export default function CandidatesPage() {
     }
   }
 
+  if (noElection) return <NoElection />;
   if (loading) return <p className="text-muted-foreground">Loading candidates…</p>;
 
   return (

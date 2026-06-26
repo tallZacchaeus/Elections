@@ -31,10 +31,11 @@ export interface ResultsPayload {
  * `votesCast` is the number of voters who have voted (one ballot per voter),
  * which is more meaningful than counting individual position votes.
  */
-export async function computeResults(): Promise<ResultsPayload> {
+export async function computeResults(electionId: string): Promise<ResultsPayload> {
   const [positions, voteGroups, totalEligible, votesCast, flaggedCount] =
     await Promise.all([
       prisma.position.findMany({
+        where: { electionId },
         orderBy: { order: "asc" },
         include: {
           candidates: {
@@ -45,11 +46,12 @@ export async function computeResults(): Promise<ResultsPayload> {
       }),
       prisma.vote.groupBy({
         by: ["candidateId"],
+        where: { electionId },
         _count: { _all: true },
       }),
-      prisma.voter.count(),
-      prisma.voter.count({ where: { hasVoted: true } }),
-      prisma.flaggedAttempt.count(),
+      prisma.voter.count({ where: { electionId } }),
+      prisma.voter.count({ where: { electionId, hasVoted: true } }),
+      prisma.flaggedAttempt.count({ where: { electionId } }),
     ]);
 
   const tally = new Map<string, number>();

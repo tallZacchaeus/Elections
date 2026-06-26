@@ -1,17 +1,18 @@
-import { getElectionSettings } from "@/lib/settings";
+import { getPortalInfo } from "@/lib/settings";
 import { Portal } from "@/components/portal/Portal";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const settings = await getElectionSettings();
+  const info = await getPortalInfo();
   return (
     <Portal
-      title={settings.electionTitle}
-      faculty={settings.faculty}
-      department={settings.department}
-      institution={settings.institution}
-      votingOpen={settings.votingOpen}
+      title={info.hasElection ? info.title : "PASA Election System"}
+      faculty={info.faculty}
+      department={info.department}
+      institution={info.institution}
+      votingOpen={info.votingOpen}
+      hasElection={info.hasElection}
     />
   );
 }

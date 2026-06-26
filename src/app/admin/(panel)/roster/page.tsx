@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { useToast, Toast } from "@/components/Toast";
 import { PageHeader } from "@/components/admin/ui";
+import { NoElection } from "@/components/admin/NoElection";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,11 +30,17 @@ export default function RosterPage() {
   const [total, setTotal] = useState(0);
   const [votedCount, setVotedCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [noElection, setNoElection] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     const res = await fetch("/api/admin/roster");
+    if (res.status === 409) {
+      setNoElection(true);
+      setLoading(false);
+      return;
+    }
     const json = await res.json();
     setVoters(json.voters ?? []);
     setTotal(json.total ?? 0);
@@ -83,6 +90,8 @@ export default function RosterPage() {
   }
 
   const shown = voters.slice(0, 12);
+
+  if (noElection) return <NoElection />;
 
   return (
     <Reveal>
