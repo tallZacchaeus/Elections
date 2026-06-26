@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/guard";
 import { prisma } from "@/lib/db";
 import { getManagedElection, setManagedElectionCookie } from "@/lib/elections";
+import { parseThresholdPct } from "@/lib/utils";
 
 const DEFAULTS = {
   institution: "Oyo State College of Agriculture and Technology",
@@ -60,6 +61,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Election title is required." }, { status: 400 });
   }
 
+  const threshold = parseThresholdPct(body.winThresholdPct);
+
   const election = await prisma.election.create({
     data: {
       title,
@@ -67,6 +70,7 @@ export async function POST(req: Request) {
       faculty: (body.faculty ?? DEFAULTS.faculty).trim() || DEFAULTS.faculty,
       department: (body.department ?? DEFAULTS.department).trim() || DEFAULTS.department,
       status: "DRAFT",
+      ...(threshold !== null ? { winThresholdPct: threshold } : {}),
       votingOpensAt: body.votingOpensAt ? new Date(body.votingOpensAt) : null,
       votingClosesAt: body.votingClosesAt ? new Date(body.votingClosesAt) : null,
     },

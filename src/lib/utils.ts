@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Parse a win-threshold percentage from request input.
+ * Returns an integer clamped to 1–100, or null when not provided/invalid
+ * (so callers can leave the existing/default value untouched).
+ */
+export function parseThresholdPct(value: unknown): number | null {
+  if (value === undefined || value === null || value === "") return null;
+  const n = Math.round(Number(value));
+  if (!Number.isFinite(n)) return null;
+  return Math.min(100, Math.max(1, n));
+}
+
 /** Two-letter initials from a full name. */
 export function initials(name: string): string {
   const p = name.trim().split(/\s+/);
