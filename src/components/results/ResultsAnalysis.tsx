@@ -40,6 +40,7 @@ export interface AnalysisData {
   thresholdPct: number;
   thresholdVotes: number;
   levels: LevelStat[];
+  timeline?: { label: string; count: number; cumulative: number }[];
 }
 
 /**
