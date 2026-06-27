@@ -6,6 +6,7 @@ import { Reveal } from "@/components/Reveal";
 import { useToast, Toast } from "@/components/Toast";
 import { PageHeader } from "@/components/admin/ui";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { RescheduleDialog, type RescheduleTarget } from "@/components/admin/RescheduleDialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +58,7 @@ export default function ElectionsPage() {
   const [managedId, setManagedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [scheduleFor, setScheduleFor] = useState<RescheduleTarget | null>(null);
 
   const [title, setTitle] = useState("");
   const [institution, setInstitution] = useState(DEFAULTS.institution);
@@ -210,6 +212,24 @@ export default function ElectionsPage() {
                         {e.status === "CLOSED" ? "Re-open" : "Open voting"}
                       </Button>
                     )}
+                    {(e.status === "DRAFT" || e.status === "CLOSED") && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setScheduleFor({
+                            id: e.id,
+                            title: e.title,
+                            status: e.status,
+                            autoSchedule: e.autoSchedule,
+                            votingOpensAt: e.votingOpensAt,
+                            votingClosesAt: e.votingClosesAt,
+                          })
+                        }
+                      >
+                        Reschedule
+                      </Button>
+                    )}
                     {e.status === "OPEN" && (
                       <Button variant="destructive" size="sm" onClick={() => setStatus(e.id, "CLOSED", "Voting closed.")}>
                         Close voting
@@ -234,6 +254,19 @@ export default function ElectionsPage() {
             );
           })}
         </div>
+      )}
+      {scheduleFor && (
+        <RescheduleDialog
+          key={scheduleFor.id}
+          election={scheduleFor}
+          onClose={() => setScheduleFor(null)}
+          onSaved={async (msg) => {
+            setScheduleFor(null);
+            showToast(msg);
+            await load();
+            router.refresh();
+          }}
+        />
       )}
       <Toast message={toast} />
     </Reveal>
