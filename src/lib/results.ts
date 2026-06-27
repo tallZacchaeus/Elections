@@ -45,6 +45,17 @@ export interface LevelStat {
   turnoutPct: number;
 }
 
+export interface TimelinePoint {
+  /** ISO timestamp at the start of the bucket. */
+  t: string;
+  /** Human label for the bucket (e.g. "18 Jun 14:00"). */
+  label: string;
+  /** Ballots sealed in this bucket. */
+  count: number;
+  /** Running total of ballots up to and including this bucket. */
+  cumulative: number;
+}
+
 export interface ResultsPayload {
   positions: ResultPosition[];
   votesCast: number;
@@ -57,10 +68,38 @@ export interface ResultsPayload {
   thresholdVotes: number;
   /** Electorate split by programme level (ND / HND), eligible vs voted. */
   levels: LevelStat[];
+  /** Cumulative ballots over time (hourly buckets) for the turnout chart. */
+  timeline: TimelinePoint[];
 }
 
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
+}
+
+/** Bucket ballot timestamps into hourly cumulative points for the turnout chart. */
+function buildTimeline(times: Date[]): TimelinePoint[] {
+  if (times.length === 0) return [];
+  const buckets = new Map<number, number>();
+  for (const d of times) {
+    const h = new Date(d);
+    h.setMinutes(0, 0, 0);
+    const key = h.getTime();
+    buckets.set(key, (buckets.get(key) ?? 0) + 1);
+  }
+  const fmt = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  let cumulative = 0;
+  return [...buckets.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([key, count]) => {
+      cumulative += count;
+      return { t: new Date(key).toISOString(), label: fmt.format(new Date(key)), count, cumulative };
+    });
 }
 
 /**
@@ -69,7 +108,7 @@ function round1(n: number): number {
  * which is more meaningful than counting individual position votes.
  */
 export async function computeResults(electionId: string): Promise<ResultsPayload> {
-  const [election, positions, voteGroups, totalEligible, votesCast, flaggedCount, voterLevels] =
+  const [election, positions, voteGroups, totalEligible, votesCast, flaggedCount, voterLevels, votedTimes] =
     await Promise.all([
       prisma.election.findUnique({
         where: { id: electionId },
@@ -96,6 +135,11 @@ export async function computeResults(electionId: string): Promise<ResultsPayload
       prisma.voter.findMany({
         where: { electionId },
         select: { matricNumber: true, hasVoted: true },
+      }),
+      prisma.voter.findMany({
+        where: { electionId, hasVoted: true, votedAt: { not: null } },
+        select: { votedAt: true },
+        orderBy: { votedAt: "asc" },
       }),
     ]);
 
@@ -167,6 +211,10 @@ export async function computeResults(electionId: string): Promise<ResultsPayload
     };
   });
 
+  const timeline = buildTimeline(
+    votedTimes.map((v) => v.votedAt as Date).filter(Boolean),
+  );
+
   return {
     positions: resultPositions,
     votesCast,
@@ -176,5 +224,6 @@ export async function computeResults(electionId: string): Promise<ResultsPayload
     thresholdPct,
     thresholdVotes,
     levels,
+    timeline,
   };
 }

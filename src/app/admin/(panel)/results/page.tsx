@@ -6,14 +6,18 @@ import { PageHeader } from "@/components/admin/ui";
 import { NoElection } from "@/components/admin/NoElection";
 import { Button } from "@/components/ui/button";
 import { ResultsBars, type ResultPosition } from "@/components/results/ResultsBars";
+import { ResultsCharts } from "@/components/results/ResultsCharts";
 import { useLiveData } from "@/hooks/useLiveData";
 
 interface Results {
   election: { id: string; title: string; status: string } | null;
   positions: ResultPosition[];
   votesCast: number;
+  totalEligible: number;
   turnoutPct: number;
   flaggedCount: number;
+  levels: { level: string; eligible: number; voted: number; turnoutPct: number }[];
+  timeline: { label: string; count: number; cumulative: number }[];
 }
 
 export default function AdminResultsPage() {
@@ -43,7 +47,18 @@ export default function AdminResultsPage() {
       {!data ? (
         <p className="text-muted-foreground">Loading results…</p>
       ) : (
-        <ResultsBars positions={data.positions} />
+        <div className="flex flex-col gap-6">
+          <ResultsCharts
+            votesCast={data.votesCast}
+            totalEligible={data.totalEligible}
+            levels={data.levels}
+            timeline={data.timeline}
+          />
+          <div>
+            <h2 className="mb-3 font-display text-xl font-bold text-foreground">Per-position results</h2>
+            <ResultsBars positions={data.positions} />
+          </div>
+        </div>
       )}
     </Reveal>
   );
